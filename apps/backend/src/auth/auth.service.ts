@@ -27,7 +27,31 @@ export default class AuthService {
       );
 
     const otp = randomInt(Math.pow(10, 5), Math.pow(10, 6));
-    await this.redis.set(`registration-otp:${otp}`, email, 'EX', 360);
+    await this.redis.set(`registration-otp:${otp}`, email, 'EX', 600);
     this.emailService.emit('registration-otp', { otp, email });
+  }
+
+  async validationRegistrationOtp(email: string, otp: string) {
+    const storedEmail = await this.redis.getdel(`registration-otp:${otp}`);
+    if (storedEmail !== email)
+      throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+
+    const user = await this.db.query.users.findFirst({
+      columns: { id: true },
+      where: {
+        email,
+      },
+    });
+
+    if (user) throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+
+    const registrationToken = crypto.randomUUID();
+    await this.redis.set(
+      `registration-token:${registrationToken}`,
+      email,
+      'EX',
+      600,
+    );
+    return registrationToken;
   }
 }
