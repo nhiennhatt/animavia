@@ -2,7 +2,8 @@ import Redis from 'ioredis';
 import { randomInt } from 'crypto';
 import { ClientProxy } from '@nestjs/microservices';
 import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
-import { type AppPgDatabaseType } from '../db/db.schema';
+import argon2 from 'argon2';
+import { users, type AppPgDatabaseType } from '../db/db.schema';
 
 @Injectable()
 export default class AuthService {
@@ -53,5 +54,33 @@ export default class AuthService {
       600,
     );
     return registrationToken;
+  }
+
+  async saveUser(
+    email: string,
+    rawPassword: string,
+    registrationToken: string,
+  ) {
+    const storedEmail = await this.redis.getdel(
+      `registration-token:${registrationToken}`,
+    );
+
+    if (storedEmail !== email)
+      throw new HttpException('Invalid token', HttpStatus.BAD_REQUEST);
+
+    const hashedPassword = await argon2.hash(rawPassword, {
+      type: argon2.argon2id,
+      memoryCost: 2 ** 17,
+      parallelism: 2,
+      timeCost: 4,
+    });
+
+    const result = await this.db
+      .insert(users)
+      .values({ email, password: hashedPassword })
+      .onConflictDoNothing({ target: users.email });
+
+    if (result.rowCount === 0)
+      throw new HttpException('User is already existing', HttpStatus.CONFLICT);
   }
 }

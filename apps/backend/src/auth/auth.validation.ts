@@ -17,3 +17,11 @@ export const validateRegistrationOtpValidation = z.object({
 export class ValidateRegistrationOtpValidation extends createZodDto(
   validateRegistrationOtpValidation,
 ) {}
+
+export const saveUserValidation = z.object({
+  email: z.email(),
+  password: z.string().regex(/^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{9,}$/),
+  registrationToken: z.uuid(),
+});
+
+export class SaveUserPayload extends createZodDto(saveUserValidation) {}

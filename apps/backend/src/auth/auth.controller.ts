@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import AuthService from './auth.service';
 import {
+  SaveUserPayload,
   SendRegistrationOtpPayload,
   ValidateRegistrationOtpValidation,
 } from './auth.validation';
@@ -25,5 +26,16 @@ export default class AuthController {
     );
 
     return { token: registrationToken };
+  }
+
+  @Post('/register')
+  async register(@Body() payload: SaveUserPayload) {
+    await this.authService.saveUser(
+      payload.email,
+      payload.password,
+      payload.registrationToken,
+    );
+
+    return { message: 'Successfully' };
   }
 }
