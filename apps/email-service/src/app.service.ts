@@ -10,9 +10,8 @@ export class AppService {
   async sendOtp(email: string, otp: string) {
     const result = await loadTemplate('registration-otp', { otp });
     await this.mailer.sendMail({
-      from: '"No Reply" <hiennhatt1804@gmail.com>',
       to: email,
-      subject: 'PAXORA | Registration OTP',
+      subject: 'PNEUMA | Registration OTP',
       html: result,
     });
   }

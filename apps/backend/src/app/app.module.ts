@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
+import { APP_PIPE } from '@nestjs/core';
+import { ZodValidationPipe } from 'nestjs-zod';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -34,6 +36,6 @@ import RedisModule from '../redis/redis.module';
     AuthModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, { provide: APP_PIPE, useClass: ZodValidationPipe }],
 })
 export class AppModule {}
