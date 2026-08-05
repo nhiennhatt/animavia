@@ -1,0 +1,20 @@
+services:
+  db:
+    image: postgres:18.4
+    ports:
+      - 5434:5432
+    environment:
+      - POSTGRES_PASSWORD=mypgpass*123
+    volumes:
+      - pgdata:/var/lib/postgresql
+
+  redis:
+    image: redis:8.10.0-alpine
+    ports:
+      - 6381:6379
+    volumes:
+      - redisdata:/data
+
+volumes:
+  pgdata:
+  redisdata:

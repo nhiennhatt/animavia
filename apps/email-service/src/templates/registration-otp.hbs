@@ -1,0 +1,76 @@
+<html lang='en'>
+
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <style>
+      .paragraph {
+        color: #747778;
+      }
+
+      .welcome {
+        color: #78a3ad;
+        margin: 0.5rem;
+        font-weight: 500;
+        text-align: center;
+      }
+
+      .mail {
+        text-align: center;
+        font-family: sans-serif;
+      }
+
+      .main {
+        padding-inline: 3rem;
+        padding-block: 2rem;
+        background-color: white;
+      }
+
+      .main > :not(:last-child) {
+        margin-inline-end: 0.4rem;
+      }
+
+      .welcome {
+        text-align: center;
+      }
+
+      .slogan {
+        color: #78a3ad;
+        font-weight: 700;
+        font-size: 1.2rem;
+        text-align: center;
+        padding-block: 1rem;
+        background-color: #f9f8f6;
+      }
+
+      .otp {
+        display: inline-block;
+        background-color: #dce4e5;
+        border-radius: 10px;
+        padding-inline: 1.3rem;
+        padding-block: 0.5rem;
+        font-size: 3rem;
+        text-align: center;
+        color: #78a3ad;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class='mail'>
+      <div class='main'>
+        <h1 class='welcome'>Welcome to Pneuma</h1>
+        <p class='paragraph'>To complete your registration, please use the
+          following one-time password (OTP) to verify your account.</p>
+        <p class='paragraph'>This code is valid for 10 minutes.</p>
+        <div>
+          <div class='otp'>{{otp}}</div>
+        </div>
+        <p class='paragraph'>If you didn't request this code, please ignore this
+          email.</p>
+      </div>
+      <div class='slogan'>Your daily breath of peace.</div>
+    </div>
+  </body>
+
+</html>
