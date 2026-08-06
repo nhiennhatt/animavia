@@ -118,7 +118,7 @@ export default class AuthService {
       const payload = this.jwtService.verifyAccessToken(token);
 
       const user = await this.db.query.users.findFirst({
-        columns: { id: true, email: true, status: true },
+        columns: { id: true, email: true, status: true, role: true },
         where: { id: payload.userId },
       });
 

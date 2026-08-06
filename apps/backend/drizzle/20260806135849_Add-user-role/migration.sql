@@ -1,0 +1,2 @@
+CREATE TYPE "user_role_enum" AS ENUM('ROLE_263', 'ROLE_985', 'ROLE_353', 'ROLE_394');--> statement-breakpoint
+ALTER TABLE "users" ADD COLUMN "role" "user_role_enum" DEFAULT 'ROLE_263'::"user_role_enum" NOT NULL;
