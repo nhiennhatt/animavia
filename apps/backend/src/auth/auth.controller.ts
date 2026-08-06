@@ -3,6 +3,7 @@ import AuthService from './auth.service';
 import {
   SaveUserPayload,
   SendRegistrationOtpPayload,
+  SignInUserValidation,
   ValidateRegistrationOtpValidation,
 } from './auth.validation';
 
@@ -37,5 +38,10 @@ export default class AuthController {
     );
 
     return { message: 'Successfully' };
+  }
+
+  @Post('/signin')
+  async signin(@Body() payload: SignInUserValidation) {
+    return await this.authService.validateUser(payload.email, payload.password);
   }
 }

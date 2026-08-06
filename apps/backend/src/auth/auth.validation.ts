@@ -25,3 +25,10 @@ export const saveUserValidation = z.object({
 });
 
 export class SaveUserPayload extends createZodDto(saveUserValidation) {}
+
+export const signInUserValidation = z.object({
+  email: z.email(),
+  password: z.string().min(9),
+});
+
+export class SignInUserValidation extends createZodDto(signInUserValidation) {}

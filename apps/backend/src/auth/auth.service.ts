@@ -1,9 +1,16 @@
 import Redis from 'ioredis';
 import { randomInt } from 'crypto';
 import { ClientProxy } from '@nestjs/microservices';
-import { HttpException, HttpStatus, Inject, Injectable } from '@nestjs/common';
+import {
+  HttpException,
+  HttpStatus,
+  Inject,
+  Injectable,
+  UnauthorizedException,
+} from '@nestjs/common';
 import argon2 from 'argon2';
 import { users, type AppPgDatabaseType } from '../db/db.schema';
+import { JwtService } from './jwt.service';
 
 @Injectable()
 export default class AuthService {
@@ -11,6 +18,11 @@ export default class AuthService {
     @Inject('DB') private readonly db: AppPgDatabaseType,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     @Inject('EMAIL_SERVICE') private readonly emailService: ClientProxy,
+    @Inject('ACCESS_PRIVATE_KEY') private readonly accessPrivateKey: string,
+    @Inject('ACCESS_PUBLIC_KEY') private readonly accessPublicKey: string,
+    @Inject('REFRESH_PRIVATE_KEY') private readonly refreshPrivateKey: string,
+    @Inject('REFRESH_PUBLIC_KEY') private readonly refreshPublicKey: string,
+    private readonly jwtService: JwtService,
   ) {}
 
   async sendRegistrationOtp(email: string) {
@@ -82,5 +94,29 @@ export default class AuthService {
 
     if (result.rowCount === 0)
       throw new HttpException('User is already existing', HttpStatus.CONFLICT);
+  }
+
+  async validateUser(email: string, plainPassword: string) {
+    const user = await this.db.query.users.findFirst({ where: { email } });
+    if (!user) throw new UnauthorizedException();
+    const result = await argon2.verify(user.password, plainPassword);
+    if (!result) throw new UnauthorizedException();
+
+    const accessToken = this.jwtService.sign(
+      { userId: user.id, status: user.status },
+      this.accessPrivateKey,
+      360,
+    );
+
+    const refreshToken = this.jwtService.sign(
+      { userId: user.id },
+      this.refreshPrivateKey,
+      7200,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }
