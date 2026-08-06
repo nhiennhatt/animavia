@@ -1,9 +1,10 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import AuthService from './auth.service';
 import AuthController from './auth.controller';
 import { JwtService } from './jwt.service';
 import { loadKey } from '../utils';
 
+@Global()
 @Module({
   controllers: [AuthController],
   providers: [
@@ -26,5 +27,6 @@ import { loadKey } from '../utils';
     },
     JwtService,
   ],
+  exports: [AuthService],
 })
 export default class AuthModule {}

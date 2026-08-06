@@ -1,6 +1,7 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import AuthService from './auth.service';
 import {
+  RefreshTokenValidation,
   SaveUserPayload,
   SendRegistrationOtpPayload,
   SignInUserValidation,
@@ -40,8 +41,13 @@ export default class AuthController {
     return { message: 'Successfully' };
   }
 
-  @Post('/signin')
-  async signin(@Body() payload: SignInUserValidation) {
+  @Post('/token')
+  async token(@Body() payload: SignInUserValidation) {
     return await this.authService.validateUser(payload.email, payload.password);
+  }
+
+  @Post('/refresh')
+  async refresh(@Body() payload: RefreshTokenValidation) {
+    return await this.authService.regainTokenPair(payload.token);
   }
 }

@@ -2,6 +2,7 @@ import Redis from 'ioredis';
 import { randomInt } from 'crypto';
 import { ClientProxy } from '@nestjs/microservices';
 import {
+  ForbiddenException,
   HttpException,
   HttpStatus,
   Inject,
@@ -11,6 +12,7 @@ import {
 import argon2 from 'argon2';
 import { users, type AppPgDatabaseType } from '../db/db.schema';
 import { JwtService } from './jwt.service';
+import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export default class AuthService {
@@ -18,10 +20,6 @@ export default class AuthService {
     @Inject('DB') private readonly db: AppPgDatabaseType,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     @Inject('EMAIL_SERVICE') private readonly emailService: ClientProxy,
-    @Inject('ACCESS_PRIVATE_KEY') private readonly accessPrivateKey: string,
-    @Inject('ACCESS_PUBLIC_KEY') private readonly accessPublicKey: string,
-    @Inject('REFRESH_PRIVATE_KEY') private readonly refreshPrivateKey: string,
-    @Inject('REFRESH_PUBLIC_KEY') private readonly refreshPublicKey: string,
     private readonly jwtService: JwtService,
   ) {}
 
@@ -102,21 +100,74 @@ export default class AuthService {
     const result = await argon2.verify(user.password, plainPassword);
     if (!result) throw new UnauthorizedException();
 
-    const accessToken = this.jwtService.sign(
-      { userId: user.id, status: user.status },
-      this.accessPrivateKey,
-      360,
-    );
+    const accessToken = this.jwtService.signAccessToken({
+      userId: user.id,
+      status: user.status,
+    });
 
-    const refreshToken = this.jwtService.sign(
-      { userId: user.id },
-      this.refreshPrivateKey,
-      7200,
-    );
+    const refreshToken = this.jwtService.signRefreshToken({ userId: user.id });
 
     return {
       accessToken,
       refreshToken,
     };
+  }
+
+  async validateAccessToken(token: string) {
+    try {
+      const payload = this.jwtService.verifyAccessToken(token);
+
+      const user = await this.db.query.users.findFirst({
+        columns: { id: true, email: true, status: true },
+        where: { id: payload.userId },
+      });
+
+      if (!user) throw new ForbiddenException();
+
+      return user;
+    } catch (error) {
+      if (error instanceof SyntaxError || error instanceof JsonWebTokenError) {
+        throw new ForbiddenException();
+      }
+      if (error instanceof TokenExpiredError) {
+        throw new ForbiddenException('TOKEN_EXPIRED');
+      }
+
+      throw error;
+    }
+  }
+
+  async regainTokenPair(token: string) {
+    try {
+      const payload = this.jwtService.verifyRefreshToken(token);
+
+      const user = await this.db.query.users.findFirst({
+        columns: { id: true, email: true, status: true },
+        where: { id: payload.userId },
+      });
+
+      if (!user) throw new ForbiddenException();
+
+      const accessToken = this.jwtService.signAccessToken({
+        userId: user.id,
+        status: user.status,
+      });
+
+      const refreshToken = this.jwtService.signRefreshToken({
+        userId: user.id,
+      });
+
+      return { accessToken, refreshToken };
+    } catch (error) {
+      if (
+        error instanceof SyntaxError ||
+        error instanceof JsonWebTokenError ||
+        error instanceof TokenExpiredError
+      ) {
+        throw new ForbiddenException();
+      }
+
+      throw error;
+    }
   }
 }

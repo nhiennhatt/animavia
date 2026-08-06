@@ -9,6 +9,7 @@ import { AppService } from './app.service';
 import AuthModule from '../auth/auth.module';
 import DbModule from '../db/db.module';
 import RedisModule from '../redis/redis.module';
+import UserModule from '../user/user.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import RedisModule from '../redis/redis.module';
       ],
     }),
     AuthModule,
+    UserModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_PIPE, useClass: ZodValidationPipe }],

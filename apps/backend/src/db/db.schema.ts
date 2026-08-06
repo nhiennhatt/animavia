@@ -1,7 +1,7 @@
 import { pgEnum, pgTable, uuid, varchar } from 'drizzle-orm/pg-core';
 import { defineRelations } from 'drizzle-orm';
 import { drizzle, NodePgDatabase } from 'drizzle-orm/node-postgres';
-import { UserStatusEnum } from '../constants';
+import { UserStatusEnum } from '../utils/constants';
 import { Pool } from 'pg';
 
 export const userStatusPgEnum = pgEnum(
