@@ -1,0 +1,1 @@
+ALTER TABLE "habits" ADD COLUMN "createdAt" timestamp DEFAULT now();
