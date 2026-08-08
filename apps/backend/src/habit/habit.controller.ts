@@ -42,12 +42,19 @@ export default class HabitController {
     htype?: (typeof HabitType)[keyof typeof HabitType],
     @Query('cursor_datetime', new ParseDatePipe({ optional: true }))
     cursorDatetime?: Date,
+    @Query(
+      'pinned',
+      new ParseEnumPipe(['1', '0'], { optional: true }),
+      new ParseIntPipe({ optional: true }),
+    )
+    pinned?: number,
   ) {
     return await this.habitService.getOwnedHabit(user.id, {
       size,
       cursor,
       cursorDatetime,
       htype,
+      pinned: pinned === undefined ? pinned : !!pinned,
     });
   }
 

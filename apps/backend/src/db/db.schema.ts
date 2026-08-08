@@ -2,9 +2,11 @@ import {
   index,
   pgEnum,
   pgTable,
+  smallint,
   timestamp,
   uuid,
   varchar,
+  boolean,
 } from 'drizzle-orm/pg-core';
 import { defineRelations, desc } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -54,7 +56,9 @@ export const habits = pgTable(
     ownerId: uuid('owner_id')
       .notNull()
       .references(() => users.id),
-    createdAt: timestamp().defaultNow(),
+    weeklyGoal: smallint('weekly_goal').notNull().default(7),
+    pinned: boolean().default(false).notNull(),
+    createdAt: timestamp('created_at').defaultNow(),
   },
   (tb) => [index('owner_createdAt_idx').on(tb.ownerId, desc(tb.createdAt))],
 );

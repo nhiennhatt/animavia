@@ -9,7 +9,7 @@ import {
   UpdateHabitValidation,
 } from './habit.validation';
 import { habits, type AppPgDatabaseType } from '../db/db.schema';
-import { and, desc, eq, gt, gte, lt, or, SQL } from 'drizzle-orm';
+import { and, desc, eq, gt, lt, or, sql, SQL } from 'drizzle-orm';
 import { HabitType } from '../utils/constants';
 
 @Injectable()
@@ -22,6 +22,8 @@ export default class HabitService {
       domain: habit.domain,
       name: habit.name,
       objective: habit.objective,
+      pinned: habit.pinned,
+      weeklyGoal: habit.weeklyGoal,
       ownerId: userId,
     });
 
@@ -52,16 +54,16 @@ export default class HabitService {
       cursor,
       cursorDatetime,
       htype,
+      pinned,
     }: {
       size?: number;
       cursor?: string;
       cursorDatetime?: Date;
       htype?: (typeof HabitType)[keyof typeof HabitType];
+      pinned?: boolean;
     },
   ) {
     const condition = [eq(habits.ownerId, userId)];
-
-    if (htype) condition.push(eq(habits.htype, htype));
 
     if (!cursor && cursorDatetime) {
       condition.push(lt(habits.createdAt, cursorDatetime));
@@ -75,6 +77,10 @@ export default class HabitService {
         ) as SQL,
       );
     }
+
+    if (pinned !== undefined) condition.push(eq(habits.pinned, pinned));
+
+    if (htype) condition.push(eq(habits.htype, htype));
 
     return await this.db
       .select()

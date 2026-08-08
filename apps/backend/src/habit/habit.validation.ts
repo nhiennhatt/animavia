@@ -7,6 +7,8 @@ export const generateHabitValidation = z.object({
   objective: z.string().max(320).optional(),
   htype: z.enum(Object.values(HabitType)),
   domain: z.array(z.enum(Object.values(LifeDomains))).min(1),
+  weeklyGoal: z.int().min(1).max(7).default(7).optional(),
+  pinned: z.boolean().default(false),
 });
 
 export class GenerateHabitValidation extends createZodDto(
@@ -22,10 +24,12 @@ export const updateHabitValidation = z
       .array(z.enum(Object.values(LifeDomains)))
       .min(1)
       .optional(),
+    pinned: z.boolean().optional(),
+    weeklyGoal: z.int().min(1).max(7).optional(),
   })
   .refine(
-    ({ domain, htype, name, objective }) =>
-      domain || htype || name || objective,
+    ({ domain, htype, name, objective, pinned, weeklyGoal }) =>
+      domain || htype || name || objective || pinned || weeklyGoal,
     {
       message: 'No values to update',
       path: [],
