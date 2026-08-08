@@ -6,6 +6,8 @@ import {
   HttpExceptionFilter,
 } from './utils/common/exception-filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import helmet from 'helmet';
+import compression from 'compression';
 
 function getSwaggerConfig() {
   return new DocumentBuilder()
@@ -20,6 +22,9 @@ async function bootstrap() {
   app.enableShutdownHooks();
   app.useGlobalInterceptors(new ResponseInterceptor());
   app.useGlobalFilters(new EveryExceptionFilter(), new HttpExceptionFilter());
+  app.use(helmet({}));
+  app.use(compression());
+  app.enableCors();
 
   SwaggerModule.setup('docs', app, () =>
     SwaggerModule.createDocument(app, getSwaggerConfig()),
