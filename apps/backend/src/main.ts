@@ -8,7 +8,11 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 function getSwaggerConfig() {
-  return new DocumentBuilder().setTitle('Pneuma API').setVersion('1.0').build();
+  return new DocumentBuilder()
+    .setTitle('Pneuma API')
+    .setVersion('1.0')
+    .addBearerAuth()
+    .build();
 }
 
 async function bootstrap() {

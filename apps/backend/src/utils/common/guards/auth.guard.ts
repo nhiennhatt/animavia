@@ -7,7 +7,7 @@ import {
 import AuthService from '../../../auth/auth.service';
 import { AppRequest } from '../../types';
 import { Reflector } from '@nestjs/core';
-import { Auth } from '../decorators';
+import { AuthConstraint } from '../decorators';
 import { UserRoleEnum, UserStatusEnum } from '../../constants';
 
 @Injectable()
@@ -18,7 +18,7 @@ export class AuthGuard implements CanActivate {
   ) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const constraint = this.reflector.get(Auth, context.getHandler());
+    const constraint = this.reflector.get(AuthConstraint, context.getHandler());
 
     const req: AppRequest = context.switchToHttp().getRequest();
     const authHeader = req.headers.authorization || '';

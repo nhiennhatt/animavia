@@ -20,7 +20,6 @@ import {
   UpdateHabitValidation,
 } from './habit.validation';
 
-import { AuthGuard } from '../utils/common/guards';
 import { Auth, User } from '../utils/common/decorators';
 import { HabitType, UserStatusEnum } from '../utils/constants';
 import type { AppUser } from '../utils/types';
@@ -29,7 +28,6 @@ import type { AppUser } from '../utils/types';
 export default class HabitController {
   constructor(private readonly habitService: HabitService) {}
 
-  @UseGuards(AuthGuard)
   @Auth({ status: [UserStatusEnum.ACTIVE] })
   @Get('')
   async getOwnedHabits(
@@ -59,7 +57,6 @@ export default class HabitController {
     });
   }
 
-  @UseGuards(AuthGuard)
   @Auth({ status: [UserStatusEnum.ACTIVE] })
   @Post('')
   async generateHabit(
@@ -69,7 +66,6 @@ export default class HabitController {
     return await this.habitService.generateHabit(user.id, payload);
   }
 
-  @UseGuards(AuthGuard)
   @Auth({ status: [UserStatusEnum.ACTIVE] })
   @Patch(':id')
   async updateHabit(
@@ -80,7 +76,6 @@ export default class HabitController {
     return await this.habitService.updateHabit(user.id, id, payload);
   }
 
-  @UseGuards(AuthGuard)
   @Auth({ status: [UserStatusEnum.ACTIVE] })
   @Get(':id')
   async getHabit(
@@ -90,7 +85,6 @@ export default class HabitController {
     return await this.habitService.getHabit(id, user.id);
   }
 
-  @UseGuards(AuthGuard)
   @Auth({ status: [UserStatusEnum.ACTIVE] })
   @Delete(':id')
   async deleteHabit(

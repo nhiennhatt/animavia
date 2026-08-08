@@ -9,7 +9,7 @@ import {
   UpdateHabitValidation,
 } from './habit.validation';
 import { habits, type AppPgDatabaseType } from '../db/db.schema';
-import { and, desc, eq, gt, lt, or, sql, SQL } from 'drizzle-orm';
+import { and, desc, eq, gt, lt, or, SQL } from 'drizzle-orm';
 import { HabitType } from '../utils/constants';
 
 @Injectable()
