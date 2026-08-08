@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseDatePipe,
@@ -49,7 +50,7 @@ export default class HabitController {
     )
     pinned?: number,
   ) {
-    return await this.habitService.getOwnedHabit(user.id, {
+    return await this.habitService.getOwnedHabits(user.id, {
       size,
       cursor,
       cursorDatetime,
@@ -77,5 +78,25 @@ export default class HabitController {
     @User() user: AppUser,
   ) {
     return await this.habitService.updateHabit(user.id, id, payload);
+  }
+
+  @UseGuards(AuthGuard)
+  @Auth({ status: [UserStatusEnum.ACTIVE] })
+  @Get(':id')
+  async getHabit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @User() user: AppUser,
+  ) {
+    return await this.habitService.getHabit(id, user.id);
+  }
+
+  @UseGuards(AuthGuard)
+  @Auth({ status: [UserStatusEnum.ACTIVE] })
+  @Delete(':id')
+  async deleteHabit(
+    @Param('id', ParseUUIDPipe) id: string,
+    @User() user: AppUser,
+  ) {
+    await this.habitService.deleteHabit(id, user.id);
   }
 }

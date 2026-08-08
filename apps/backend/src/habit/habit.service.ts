@@ -47,7 +47,7 @@ export default class HabitService {
     return { message: 'Oki' };
   }
 
-  async getOwnedHabit(
+  async getOwnedHabits(
     userId: string,
     {
       size = 10,
@@ -88,5 +88,24 @@ export default class HabitService {
       .where(and(...condition))
       .orderBy(desc(habits.createdAt))
       .limit(Math.min(size, 10));
+  }
+
+  async getHabit(id: string, userId: string) {
+    const result = await this.db
+      .select()
+      .from(habits)
+      .where(and(eq(habits.id, id), eq(habits.ownerId, userId)));
+
+    if (!result || result.length === 0) throw new NotFoundException();
+
+    return result;
+  }
+
+  async deleteHabit(id: string, userId: string) {
+    const result = await this.db
+      .delete(habits)
+      .where(and(eq(habits.id, id), eq(habits.ownerId, userId)));
+
+    if (result.rowCount === 0) throw new NotFoundException();
   }
 }
