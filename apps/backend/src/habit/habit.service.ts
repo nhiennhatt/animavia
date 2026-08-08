@@ -2,9 +2,15 @@ import {
   Inject,
   Injectable,
   InternalServerErrorException,
+  NotFoundException,
 } from '@nestjs/common';
-import { GenerateHabitValidation } from './habit.validation';
+import {
+  GenerateHabitValidation,
+  UpdateHabitValidation,
+} from './habit.validation';
 import { habits, type AppPgDatabaseType } from '../db/db.schema';
+import { and, desc, eq, gt, gte, lt, or, SQL } from 'drizzle-orm';
+import { HabitType } from '../utils/constants';
 
 @Injectable()
 export default class HabitService {
@@ -15,11 +21,66 @@ export default class HabitService {
       htype: habit.htype,
       domain: habit.domain,
       name: habit.name,
+      objective: habit.objective,
       ownerId: userId,
     });
 
     if (generatedHabit.rowCount === 0) throw new InternalServerErrorException();
 
     return { message: 'ok' };
+  }
+
+  async updateHabit(
+    userId: string,
+    id: string,
+    payload: UpdateHabitValidation,
+  ) {
+    const result = await this.db
+      .update(habits)
+      .set(payload)
+      .where(and(eq(habits.id, id), eq(habits.ownerId, userId)));
+
+    if (!result.rowCount) throw new NotFoundException();
+
+    return { message: 'Oki' };
+  }
+
+  async getOwnedHabit(
+    userId: string,
+    {
+      size = 10,
+      cursor,
+      cursorDatetime,
+      htype,
+    }: {
+      size?: number;
+      cursor?: string;
+      cursorDatetime?: Date;
+      htype?: (typeof HabitType)[keyof typeof HabitType];
+    },
+  ) {
+    const condition = [eq(habits.ownerId, userId)];
+
+    if (htype) condition.push(eq(habits.htype, htype));
+
+    if (!cursor && cursorDatetime) {
+      condition.push(lt(habits.createdAt, cursorDatetime));
+    }
+
+    if (cursor && cursorDatetime) {
+      condition.push(
+        or(
+          lt(habits.createdAt, cursorDatetime),
+          and(eq(habits.createdAt, cursorDatetime), gt(habits.id, cursor)),
+        ) as SQL,
+      );
+    }
+
+    return await this.db
+      .select()
+      .from(habits)
+      .where(and(...condition))
+      .orderBy(desc(habits.createdAt))
+      .limit(Math.min(size, 10));
   }
 }

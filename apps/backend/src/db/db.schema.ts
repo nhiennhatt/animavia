@@ -1,5 +1,12 @@
-import { pgEnum, pgTable, timestamp, uuid, varchar } from 'drizzle-orm/pg-core';
-import { defineRelations } from 'drizzle-orm';
+import {
+  index,
+  pgEnum,
+  pgTable,
+  timestamp,
+  uuid,
+  varchar,
+} from 'drizzle-orm/pg-core';
+import { defineRelations, desc } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   HabitType,
@@ -36,17 +43,21 @@ export const users = pgTable('users', {
   role: userRolePgEnum('role').default(UserRoleEnum.PRACTITIONER).notNull(),
 });
 
-export const habits = pgTable('habits', {
-  id: uuid().primaryKey().defaultRandom(),
-  name: varchar({ length: 120 }).notNull(),
-  objective: varchar({ length: 360 }),
-  htype: habitTypePgEnum().notNull(),
-  domain: lifeDomainPgEnum().array().default([]),
-  ownerId: uuid('owner_id')
-    .notNull()
-    .references(() => users.id),
-  createdAt: timestamp().defaultNow(),
-});
+export const habits = pgTable(
+  'habits',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    name: varchar({ length: 120 }).notNull(),
+    objective: varchar({ length: 360 }),
+    htype: habitTypePgEnum().notNull(),
+    domain: lifeDomainPgEnum().array().default([]),
+    ownerId: uuid('owner_id')
+      .notNull()
+      .references(() => users.id),
+    createdAt: timestamp().defaultNow(),
+  },
+  (tb) => [index('owner_createdAt_idx').on(tb.ownerId, desc(tb.createdAt))],
+);
 
 export const dbRelations = defineRelations({ users, habits }, (r) => ({
   habits: {
