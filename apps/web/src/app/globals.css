@@ -2,6 +2,8 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+@custom-variant dark (false);
+
 @theme inline {
   /* Shadcn UI Theme Tokens */
   --color-background: var(--background);
@@ -40,6 +42,9 @@
   --color-destructive: var(--destructive);
   --color-destructive-foreground: var(--destructive-foreground);
 
+  --color-surface: var(--surface);
+  --color-surface-foreground: var(--surface-foreground);
+
   --color-surface-container-low: var(--surface-container-low);
 
   --color-border: var(--border);
@@ -62,8 +67,8 @@
   --radius: var(--radius-default);
 
   /* Typography */
-  --font-sans: "Manrope", sans-serif;
-  --font-serif: "Literata", serif;
+  --font-sans: "Inter", sans-serif;
+  --font-serif: "Cascadia Mono", serif;
 
   /* Spacing */
   --spacing-unit: 8px;
@@ -82,6 +87,8 @@
 
   --font-heading: var(--font-heading);
   --font-mono: var(--font-mono);
+  --font-primary: var(--font-primary);
+  --input: var(--input);
 }
 
 :root {
@@ -102,6 +109,9 @@
   --primary: #426447;
   /* Sage Green */
   --primary-foreground: #ffffff;
+
+  --surface: #f9faf6;
+  --surface-foreground: #1a1c1a;
 
   /* Lower-emphasis Actions */
   --secondary: #446272;
@@ -140,15 +150,16 @@
   --ink-charcoal: #2d3436;
 
   /* Radius Scale */
-  --radius-sm: 0.25rem;
+  --radius-sm: 0.35rem;
   --radius-default: 0.5rem;
-  --radius-md: 0.75rem;
-  --radius-lg: 1rem;
-  --radius-xl: 1.5rem;
-  --radius-full: 9999px;
+  --radius-md: 0.85rem;
+  --radius-lg: 1.1rem;
+  --radius-xl: 1.6rem;
+  --radius-full: 100%;
 
   --font-heading: var(--font-andada-pro);
-  --font-mono: var(--font-lxgwWenKaiMonoTc);
+  --font-mono: var(--font-cascadia-Mono);
+  --font-primary: var(--font-inter);
 
   --primary-container: #5a7d5f;
   --primary-container-foreground: #f7fff3;
@@ -169,6 +180,8 @@
   --heart-line-red-fill: var(--color-red-700);
   --heart-neutral-fill: var(--heart-line-neutral-fill);
   --heart-red-fill: var(--color-red-300);
+
+  --input: color-mix(var(--color-primary) 20%, transparent);
 }
 
 @layer base {
@@ -177,23 +190,22 @@
   }
 
   body {
-    @apply bg-background text-foreground font-sans;
+    @apply bg-background text-foreground font-sans font-normal;
   }
 
-  /* Typography classes from DESIGN.md */
   h1,
   .display {
-    @apply font-heading text-[48px] font-semibold leading-14 tracking-[-0.02em];
+    @apply font-heading text-5xl font-semibold leading-14 tracking-[-0.02em];
   }
 
   h2,
   .headline-lg {
-    @apply font-heading text-[32px] font-medium leading-10;
+    @apply font-heading text-4xl font-medium leading-10;
   }
 
   h3,
   .headline-md {
-    @apply font-heading text-[24px] font-medium leading-8;
+    @apply font-heading text-3xl font-medium leading-8;
   }
 }
 

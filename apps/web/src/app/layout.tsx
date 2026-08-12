@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { Andada_Pro, Be_Vietnam_Pro, Cascadia_Mono } from "next/font/google";
+import { Andada_Pro, Cascadia_Mono, Inter } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "./AppProvider";
 
-const lxgwWenKaiMonoTc = Cascadia_Mono({
+const cascadiaMono = Cascadia_Mono({
   subsets: ["latin", "vietnamese"],
-  variable: "--font-lxgwWenKaiMonoTc",
+  variable: "--font-cascadia-Mono",
   weight: ["200", "300", "500"],
   adjustFontFallback: false,
 });
@@ -15,10 +15,10 @@ const andadaPro = Andada_Pro({
   variable: "--font-andada-pro",
 });
 
-const beVietnamPro = Be_Vietnam_Pro({
+const inter = Inter({
   subsets: ["latin", "vietnamese"],
-  weight: ["300", "800"],
-  variable: "--font-be-vietnam-pro",
+  weight: ["300", "400", "500", "700", "900"],
+  variable: "--font-inter",
 });
 
 export const metadata: Metadata = {
@@ -30,7 +30,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${lxgwWenKaiMonoTc.variable} ${andadaPro.variable} ${beVietnamPro.variable} ${beVietnamPro.className} h-full antialiased`}
+      className={`${cascadiaMono.variable} ${andadaPro.variable} ${inter.variable} ${inter.className} h-full antialiased`}
     >
       <body className="min-h-screen flex flex-col antialiased">
         <AppProvider>{children}</AppProvider>
