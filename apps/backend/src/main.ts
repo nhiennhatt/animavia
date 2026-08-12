@@ -8,6 +8,7 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import compression from 'compression';
+import type { CorsOptions } from 'cors';
 
 function getSwaggerConfig() {
   return new DocumentBuilder()
@@ -24,7 +25,9 @@ async function bootstrap() {
   app.useGlobalFilters(new EveryExceptionFilter(), new HttpExceptionFilter());
   app.use(helmet({}));
   app.use(compression());
-  app.enableCors();
+  app.enableCors({
+    origin: 'http://localhost:3303',
+  });
 
   SwaggerModule.setup('docs', app, () =>
     SwaggerModule.createDocument(app, getSwaggerConfig()),
