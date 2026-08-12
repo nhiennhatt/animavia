@@ -40,6 +40,7 @@ export const habitTypePgEnum = pgEnum(
 export const users = pgTable('users', {
   id: uuid().primaryKey().defaultRandom(),
   email: varchar({ length: 50 }).notNull().unique(),
+  givenName: varchar('given_name', { length: 80 }).notNull(),
   password: varchar({ length: 255 }).notNull(),
   status: userStatusPgEnum('status').default(UserStatusEnum.ACTIVE).notNull(),
   role: userRolePgEnum('role').default(UserRoleEnum.PRACTITIONER).notNull(),

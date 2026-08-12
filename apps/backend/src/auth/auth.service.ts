@@ -70,6 +70,7 @@ export default class AuthService {
     email: string,
     rawPassword: string,
     registrationToken: string,
+    givenName: string,
   ) {
     const storedEmail = await this.redis.getdel(
       `registration-token:${registrationToken}`,
@@ -87,7 +88,7 @@ export default class AuthService {
 
     const result = await this.db
       .insert(users)
-      .values({ email, password: hashedPassword })
+      .values({ email, password: hashedPassword, givenName })
       .onConflictDoNothing({ target: users.email });
 
     if (result.rowCount === 0)
@@ -118,7 +119,13 @@ export default class AuthService {
       const payload = this.jwtService.verifyAccessToken(token);
 
       const user = await this.db.query.users.findFirst({
-        columns: { id: true, email: true, status: true, role: true },
+        columns: {
+          id: true,
+          email: true,
+          status: true,
+          role: true,
+          givenName: true,
+        },
         where: { id: payload.userId },
       });
 

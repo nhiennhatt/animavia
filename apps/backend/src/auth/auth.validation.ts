@@ -22,6 +22,7 @@ export const saveUserValidation = z.object({
   email: z.email(),
   password: z.string().regex(/^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{9,}$/),
   registrationToken: z.uuid(),
+  givenName: z.string().min(3).max(75),
 });
 
 export class SaveUserPayload extends createZodDto(saveUserValidation) {}

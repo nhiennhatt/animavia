@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken';
 import { Request } from 'express';
-import { UserStatusEnum } from './constants';
+import { UserRoleEnum, UserStatusEnum } from './constants';
 export interface UserPayload extends jwt.JwtPayload {
   userId: string;
   status: (typeof UserStatusEnum)[keyof typeof UserStatusEnum];
@@ -9,6 +9,9 @@ export interface UserPayload extends jwt.JwtPayload {
 export interface AppUser {
   id: string;
   status: (typeof UserStatusEnum)[keyof typeof UserStatusEnum];
+  role: (typeof UserRoleEnum)[keyof typeof UserRoleEnum];
+  givenName: string;
+  email: string;
 }
 
 export interface AppRequest extends Request {

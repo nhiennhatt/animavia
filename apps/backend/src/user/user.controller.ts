@@ -8,7 +8,7 @@ export default class UserController {
   @Get('')
   @Auth()
   @UseGuards(AuthGuard)
-  testUser(@User() user: AppUser) {
+  getCurrentUser(@User() user: AppUser) {
     return user;
   }
 }

@@ -36,6 +36,7 @@ export default class AuthController {
       payload.email,
       payload.password,
       payload.registrationToken,
+      payload.givenName,
     );
 
     return { message: 'Successfully' };

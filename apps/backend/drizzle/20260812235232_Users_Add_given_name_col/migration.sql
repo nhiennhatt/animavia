@@ -1,0 +1,1 @@
+ALTER TABLE "users" ADD COLUMN "given_name" varchar(80) NOT NULL DEFAULT '';
