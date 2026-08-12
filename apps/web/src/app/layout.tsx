@@ -1,15 +1,24 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Andada_Pro, Be_Vietnam_Pro, Cascadia_Mono } from "next/font/google";
 import "./globals.css";
+import { AppProvider } from "./AppProvider";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const lxgwWenKaiMonoTc = Cascadia_Mono({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-lxgwWenKaiMonoTc",
+  weight: ["200", "300", "500"],
+  adjustFontFallback: false,
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const andadaPro = Andada_Pro({
+  subsets: ["latin", "vietnamese"],
+  variable: "--font-andada-pro",
+});
+
+const beVietnamPro = Be_Vietnam_Pro({
+  subsets: ["latin", "vietnamese"],
+  weight: ["300", "800"],
+  variable: "--font-be-vietnam-pro",
 });
 
 export const metadata: Metadata = {
@@ -21,9 +30,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${lxgwWenKaiMonoTc.variable} ${andadaPro.variable} ${beVietnamPro.variable} ${beVietnamPro.className} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-screen flex flex-col antialiased">
+        <AppProvider>{children}</AppProvider>
+      </body>
     </html>
   );
 }
