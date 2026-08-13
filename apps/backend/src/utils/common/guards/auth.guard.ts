@@ -3,6 +3,7 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  UnauthorizedException,
 } from '@nestjs/common';
 import AuthService from '../../../auth/auth.service';
 import { AppRequest } from '../../types';
@@ -23,9 +24,9 @@ export class AuthGuard implements CanActivate {
     const req: AppRequest = context.switchToHttp().getRequest();
     const authHeader = req.headers.authorization || '';
     const match = authHeader.match(/^Bearer\s+(.+)$/i);
-    if (!match) return false;
+    if (!match) throw new UnauthorizedException();
     const user = await this.authService.validateAccessToken(match[1]);
-    if (!user) return false;
+    if (!user) throw new UnauthorizedException();
 
     if (
       constraint &&

@@ -120,7 +120,7 @@ export default class AuthService {
   async validateAccessToken(token: string) {
     try {
       if (await this.checkTokenInBlacklist(token))
-        throw new ForbiddenException();
+        throw new UnauthorizedException();
 
       const payload = this.jwtService.verifyAccessToken(token);
 
@@ -135,15 +135,15 @@ export default class AuthService {
         where: { id: payload.userId },
       });
 
-      if (!user) throw new ForbiddenException();
+      if (!user) throw new UnauthorizedException();
 
       return user;
     } catch (error) {
       if (error instanceof TokenExpiredError) {
-        throw new ForbiddenException('TOKEN_EXPIRED');
+        throw new UnauthorizedException('TOKEN_EXPIRED');
       }
       if (error instanceof SyntaxError || error instanceof JsonWebTokenError) {
-        throw new ForbiddenException();
+        throw new UnauthorizedException();
       }
 
       throw error;
