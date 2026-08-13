@@ -29,7 +29,7 @@ export class JwtService {
   }
 
   signAccessToken(payload: object) {
-    return this.sign(payload, this.accessPrivateKey, 360);
+    return this.sign(payload, this.accessPrivateKey, 2);
   }
 
   signRefreshToken(payload: object) {

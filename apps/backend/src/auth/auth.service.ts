@@ -133,11 +133,11 @@ export default class AuthService {
 
       return user;
     } catch (error) {
-      if (error instanceof SyntaxError || error instanceof JsonWebTokenError) {
-        throw new ForbiddenException();
-      }
       if (error instanceof TokenExpiredError) {
         throw new ForbiddenException('TOKEN_EXPIRED');
+      }
+      if (error instanceof SyntaxError || error instanceof JsonWebTokenError) {
+        throw new ForbiddenException();
       }
 
       throw error;
