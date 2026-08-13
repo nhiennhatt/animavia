@@ -4,7 +4,7 @@ import z from "zod";
 import Link from "next/link";
 import { useState } from "react";
 import { ArrowRight, Eye, EyeClosed, KeyRound, Mail } from "lucide-react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 
 import { Label } from "@/components/ui/label";
@@ -21,6 +21,8 @@ import { login } from "@/services/user.service";
 
 export function Login() {
   const router = useRouter();
+  const queryClient = useQueryClient();
+
   const [seePassword, setSeePassword] = useState(false);
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
@@ -40,6 +42,7 @@ export function Login() {
     },
     onSuccess: (data) => {
       router.push("/");
+      queryClient.invalidateQueries({ queryKey: ["authenticatedUser"] });
     },
     onError: (err: unknown) => {
       if (err instanceof z.ZodError) {

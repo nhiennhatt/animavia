@@ -1,3 +1,8 @@
+"use client";
+
+import Link from "next/link";
+import { SquareArrowRightEnter, SquareArrowRightExit } from "lucide-react";
+
 import { sidebarMenu } from "@/config/sidebar-menu";
 import {
   Sidebar,
@@ -10,20 +15,58 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
 } from "../ui/sidebar";
-import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { SquareArrowRightExit } from "lucide-react";
+import { Button } from "../ui/button";
+import { useUser } from "@/hooks/use-user";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { logout } from "@/services/user.service";
 
 export function AppSidebar() {
+  const { user, loading } = useUser();
+  const queryClient = useQueryClient();
+  const { mutate: handleLogout } = useMutation({
+    mutationFn: async () => {
+      await logout();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["authenticatedUser"],
+      });
+    },
+  });
+
   return (
     <Sidebar className="border-none">
-      <SidebarHeader>
-        <Link
-          href="/"
-          className="text-4xl font-bold mx-2 px-3.5 py-2 md:py-4 font-heading text-primary transition-[text-shadow] text-shadow-xs hover:text-shadow-secondary"
-        >
-          PNEUMA
-        </Link>
+      <SidebarHeader className="py-5 space-y-3">
+        <div className="mx-3">
+          <Link
+            href="/"
+            className="text-4xl font-bold font-heading text-primary transition-[text-shadow] text-shadow-xs hover:text-shadow-secondary"
+          >
+            Animavia
+          </Link>
+          <p className="font-sans font-light">Dẫn lối tâm hồn</p>
+        </div>
+        <SidebarMenu>
+          <SidebarMenuItem className="px-2">
+            {!loading &&
+              (!user ? (
+                <Button
+                  asChild
+                  className="w-full text-lg h-auto! py-2 rounded-xl"
+                >
+                  <Link href="/login">
+                    Đăng nhập
+                    <SquareArrowRightEnter />
+                  </Link>
+                </Button>
+              ) : (
+                <Button className="w-full text-lg h-auto! py-2 rounded-xl">
+                  Hồi tâm hằng ngày
+                </Button>
+              ))}
+          </SidebarMenuItem>
+        </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
         <SidebarGroup>
@@ -56,12 +99,17 @@ export function AppSidebar() {
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton className="flex justify-between text-orange-800">
-              Đăng xuất
-              <SquareArrowRightExit />
-            </SidebarMenuButton>
-          </SidebarMenuItem>
+          {user && (
+            <SidebarMenuItem>
+              <SidebarMenuButton
+                onClick={() => handleLogout()}
+                className="flex justify-between text-orange-800"
+              >
+                Đăng xuất
+                <SquareArrowRightExit />
+              </SidebarMenuButton>
+            </SidebarMenuItem>
+          )}
         </SidebarMenu>
       </SidebarFooter>
     </Sidebar>

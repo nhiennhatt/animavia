@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Andada_Pro, Cascadia_Mono, Inter } from "next/font/google";
+import { Andada_Pro, Cascadia_Mono, Exo_2, Inter } from "next/font/google";
 import "./globals.css";
 import { AppProvider } from "./AppProvider";
 
@@ -15,10 +15,9 @@ const andadaPro = Andada_Pro({
   variable: "--font-andada-pro",
 });
 
-const inter = Inter({
+const exo2 = Exo_2({
   subsets: ["latin", "vietnamese"],
-  weight: ["300", "400", "500", "700", "900"],
-  variable: "--font-inter",
+  variable: "--font-exo-2",
 });
 
 export const metadata: Metadata = {
@@ -30,7 +29,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${cascadiaMono.variable} ${andadaPro.variable} ${inter.variable} ${inter.className} h-full antialiased`}
+      className={`${cascadiaMono.variable} ${andadaPro.variable} ${exo2.variable} ${exo2.className} h-full antialiased`}
     >
       <body className="min-h-screen flex flex-col antialiased">
         <AppProvider>{children}</AppProvider>

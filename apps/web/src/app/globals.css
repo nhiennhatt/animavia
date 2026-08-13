@@ -67,7 +67,7 @@
   --radius: var(--radius-default);
 
   /* Typography */
-  --font-sans: "Inter", sans-serif;
+  --font-sans: var(--font-primary), sans-serif;
   --font-serif: "Cascadia Mono", serif;
 
   /* Spacing */
@@ -159,7 +159,7 @@
 
   --font-heading: var(--font-andada-pro);
   --font-mono: var(--font-cascadia-Mono);
-  --font-primary: var(--font-inter);
+  --font-primary: var(--font-exo-2);
 
   --primary-container: #5a7d5f;
   --primary-container-foreground: #f7fff3;

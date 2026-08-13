@@ -18,7 +18,6 @@ export const sidebarMenuItems = [
   "communities",
   "outdoor",
   "supportCenter",
-  "calendar",
   "SWOT",
 ] as const;
 
@@ -64,11 +63,6 @@ export const sidebarMenu: Record<
     icon: (props: SVGProps<SVGSVGElement>) => <HeartPlus {...props} />,
     href: "#",
     name: "Góc lắng nghe",
-  },
-  calendar: {
-    icon: (props: SVGProps<SVGSVGElement>) => <Calendar {...props} />,
-    href: "#",
-    name: "Lịch Phụng Vụ",
   },
   SWOT: {
     icon: (props: SVGProps<SVGSVGElement>) => <Grid2X2 {...props} />,
