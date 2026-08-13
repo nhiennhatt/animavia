@@ -1,17 +1,40 @@
 "use client";
 
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { UserContext } from "@/contexts/user.context";
+import { getAuthenticatedUserInform } from "@/services/user.service";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useQuery,
+} from "@tanstack/react-query";
 import { ReactNode } from "react";
 import { Toaster } from "sonner";
 
 export function AppProvider({ children }: { children: ReactNode }) {
+  const queryClient = new QueryClient();
+  const { data: user, isLoading: isLoadingUser } = useQuery(
+    {
+      queryKey: ["authenticatedUser"],
+      queryFn: async () => {
+        const res = await getAuthenticatedUserInform();
+        if (!res.success) return null;
+        return res.data;
+      },
+    },
+    queryClient,
+  );
+
   return (
-    <QueryClientProvider client={new QueryClient()}>
-      <TooltipProvider>
-        {children}
-        <Toaster />
-      </TooltipProvider>
+    <QueryClientProvider client={queryClient}>
+      <UserContext.Provider
+        value={{ user: user || null, loading: isLoadingUser }}
+      >
+        <TooltipProvider>
+          {children}
+          <Toaster />
+        </TooltipProvider>
+      </UserContext.Provider>
     </QueryClientProvider>
   );
 }

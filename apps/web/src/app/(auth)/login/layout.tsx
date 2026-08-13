@@ -1,9 +1,28 @@
+"use client";
+
 import { Button } from "@/components/ui/button";
+import { useAuthenticated } from "@/hooks/use-authenticated";
 import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
-import { ReactNode } from "react";
+import { useRouter } from "next/navigation";
+import { ReactNode, useEffect } from "react";
 
 export default function AuthLogin({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const authStatus = useAuthenticated();
+
+  useEffect(() => {
+    if (authStatus === "authenticated") {
+      router.push("/");
+    }
+  }, [authStatus, router]);
+
+  if (authStatus === "idle") {
+    return "Loading...";
+  }
+
+  if (authStatus === "authenticated") return null;
+
   return (
     <div className="bg-surface flex-1 flex items-center relative">
       <div className="absolute left-0 top-0 m-10">
