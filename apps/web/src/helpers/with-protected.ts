@@ -1,3 +1,5 @@
+import { cookies } from "next/headers";
+
 import { AppError } from "@/lib/app-error";
 import { regainToken } from "@/services/user.service";
 import { AppServerResponse } from "@/types/app";
@@ -9,11 +11,27 @@ export const withProtected = <TArgs extends any[], TResult>(
     try {
       return await action(...args);
     } catch (error) {
-      if (error instanceof AppError && error.code === "TOKEN_EXPIRED") {
-        const newTokenReq = await regainToken();
-        if (!newTokenReq.success) return newTokenReq;
-        return action(...args);
+      if (error instanceof AppError) {
+        if (error.code === "TOKEN_EXPIRED") {
+          const newTokenReq = await regainToken();
+          if (!newTokenReq.success) return newTokenReq;
+          return action(...args);
+        }
+
+        if (error.code === "UNAUTHORIZED") {
+          const cookieStore = await cookies();
+          cookieStore.delete("token");
+          cookieStore.delete("refresh");
+          return {
+            success: false,
+            code: "UNAUTHORIZED",
+            error: "UNAUTHORIZED",
+          };
+        }
       }
+
+      console.log(error);
+
       return {
         success: false,
         code: "INTERNAL_ERROR",

@@ -121,8 +121,12 @@ export const getAuthenticatedUserInform = withProtected(
     const res: ApiResponse<BaseUser | null> = await req.json();
 
     if (res.error) {
-      if (res.code === "TOKEN_EXPIRED") {
+      if (res.code.toLowerCase() === "token_expired") {
         throw new AppError("TOKEN_EXPIRED", "TOKEN_EXPIRED");
+      }
+
+      if (res.code.toLowerCase() === "unauthorized") {
+        throw new AppError("UNAUTHORIZED", "UNAUTHORIZED");
       }
 
       return {
@@ -142,6 +146,20 @@ export const getAuthenticatedUserInform = withProtected(
 
 export const logout = async () => {
   const cookieStore = await cookies();
-  cookieStore.delete("token");
-  cookieStore.delete("refresh");
-}
+  const access = cookieStore.get("token");
+  const refresh = cookieStore.get("refresh");
+
+  if (!access || !refresh) return;
+
+  try {
+    await fetch("http://localhost:3000/auth/logout", {
+      method: "DELETE",
+      body: JSON.stringify({ access: access.value, refresh: refresh.value }),
+      headers: [["Authorization", `bearer ${access}`]],
+    });
+  } catch (error) {
+  } finally {
+    cookieStore.delete("token");
+    cookieStore.delete("refresh");
+  }
+};
