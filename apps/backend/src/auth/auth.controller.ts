@@ -1,12 +1,14 @@
-import { Body, Controller, Post } from '@nestjs/common';
+import { Body, Controller, Delete, Post } from '@nestjs/common';
 import AuthService from './auth.service';
 import {
+  LogoutValidationSchema,
   RefreshTokenValidation,
   SaveUserPayload,
   SendRegistrationOtpPayload,
   SignInUserValidation,
   ValidateRegistrationOtpValidation,
 } from './auth.validation';
+import { Auth } from '../utils/common/decorators';
 
 @Controller('auth')
 export default class AuthController {
@@ -50,5 +52,11 @@ export default class AuthController {
   @Post('/refresh')
   async refresh(@Body() payload: RefreshTokenValidation) {
     return await this.authService.regainTokenPair(payload.token);
+  }
+
+  @Delete('/logout')
+  @Auth()
+  async logout(@Body() body: LogoutValidationSchema) {
+    await this.authService.logout(body.access, body.refresh);
   }
 }

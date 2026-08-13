@@ -33,7 +33,7 @@ export class JwtService {
   }
 
   signRefreshToken(payload: object) {
-    return this.sign(payload, this.refreshPrivateKey, 7200);
+    return this.sign(payload, this.refreshPrivateKey, 2880);
   }
 
   verifyAccessToken(token: string): UserPayload {

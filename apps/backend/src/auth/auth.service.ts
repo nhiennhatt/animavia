@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { randomInt } from 'crypto';
+import { createHash, randomInt } from 'crypto';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   ForbiddenException,
@@ -7,6 +7,7 @@ import {
   HttpStatus,
   Inject,
   Injectable,
+  Logger,
   UnauthorizedException,
 } from '@nestjs/common';
 import argon2 from 'argon2';
@@ -16,6 +17,8 @@ import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
 
 @Injectable()
 export default class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     @Inject('DB') private readonly db: AppPgDatabaseType,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
@@ -116,6 +119,9 @@ export default class AuthService {
 
   async validateAccessToken(token: string) {
     try {
+      if (await this.checkTokenInBlacklist(token))
+        throw new ForbiddenException();
+
       const payload = this.jwtService.verifyAccessToken(token);
 
       const user = await this.db.query.users.findFirst({
@@ -146,6 +152,9 @@ export default class AuthService {
 
   async regainTokenPair(token: string) {
     try {
+      if (await this.checkTokenInBlacklist(token))
+        throw new ForbiddenException();
+
       const payload = this.jwtService.verifyRefreshToken(token);
 
       const user = await this.db.query.users.findFirst({
@@ -176,5 +185,40 @@ export default class AuthService {
 
       throw error;
     }
+  }
+
+  async addTokenToBlackList(token: string, type: 'access' | 'refresh') {
+    try {
+      const verifiedData =
+        type === 'access'
+          ? this.jwtService.verifyAccessToken(token)
+          : this.jwtService.verifyRefreshToken(token);
+
+      const hashedToken = createHash('sha256').update(token).digest('hex');
+
+      if (verifiedData)
+        await this.redis.set(
+          `bl:${hashedToken}`,
+          '1',
+          'EX',
+          type === 'access' ? 21600 : 172800,
+        );
+    } catch (error) {
+      this.logger.log('Save blacklist failed');
+    }
+  }
+
+  async checkTokenInBlacklist(token: string) {
+    const hashedToken = createHash('sha256').update(token).digest('hex');
+
+    const exist = await this.redis.get(`bl:${hashedToken}`);
+    return !!exist;
+  }
+
+  async logout(token: string, refreshToken: string) {
+    await Promise.allSettled([
+      this.addTokenToBlackList(token, 'access'),
+      this.addTokenToBlackList(refreshToken, 'refresh'),
+    ]);
   }
 }

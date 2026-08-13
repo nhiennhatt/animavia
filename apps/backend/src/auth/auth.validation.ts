@@ -41,3 +41,12 @@ export const refreshTokenValidation = z.object({
 export class RefreshTokenValidation extends createZodDto(
   refreshTokenValidation,
 ) {}
+
+export const logoutValidationSchema = z.object({
+  access: z.jwt(),
+  refresh: z.jwt(),
+});
+
+export class LogoutValidationSchema extends createZodDto(
+  logoutValidationSchema,
+) {}
