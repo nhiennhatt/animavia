@@ -45,7 +45,7 @@ export function AppSidebar() {
           >
             Animavia
           </Link>
-          <p className="font-sans font-light">Dẫn lối tâm hồn</p>
+          <p className="mx-0.5 font-sans font-normal">Dẫn lối tâm hồn</p>
         </div>
         <SidebarMenu>
           <SidebarMenuItem className="px-2">
