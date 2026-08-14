@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { createHash, randomInt } from 'crypto';
+import { randomInt, randomUUID } from 'crypto';
 import { ClientProxy } from '@nestjs/microservices';
 import {
   ForbiddenException,
@@ -13,7 +13,11 @@ import {
 import argon2 from 'argon2';
 import { users, type AppPgDatabaseType } from '../db/db.schema';
 import { JwtService } from './jwt.service';
-import { JsonWebTokenError, TokenExpiredError } from 'jsonwebtoken';
+import {
+  JsonWebTokenError,
+  NotBeforeError,
+  TokenExpiredError,
+} from 'jsonwebtoken';
 
 @Injectable()
 export default class AuthService {
@@ -104,12 +108,20 @@ export default class AuthService {
     const result = await argon2.verify(user.password, plainPassword);
     if (!result) throw new UnauthorizedException();
 
-    const accessToken = this.jwtService.signAccessToken({
-      userId: user.id,
-      status: user.status,
-    });
+    const jti = randomUUID();
 
-    const refreshToken = this.jwtService.signRefreshToken({ userId: user.id });
+    const accessToken = this.jwtService.signAccessToken(
+      {
+        userId: user.id,
+        status: user.status,
+      },
+      jti,
+    );
+
+    const refreshToken = this.jwtService.signRefreshToken(
+      { userId: user.id },
+      jti,
+    );
 
     return {
       accessToken,
@@ -119,9 +131,6 @@ export default class AuthService {
 
   async validateAccessToken(token: string) {
     try {
-      if (await this.checkTokenInBlacklist(token))
-        throw new UnauthorizedException();
-
       const payload = this.jwtService.verifyAccessToken(token);
 
       const user = await this.db.query.users.findFirst({
@@ -152,10 +161,12 @@ export default class AuthService {
 
   async regainTokenPair(token: string) {
     try {
-      if (await this.checkTokenInBlacklist(token))
+      const payload = this.jwtService.verifyRefreshToken(token);
+
+      if (await this.checkTokenInBlacklist(payload.jti))
         throw new ForbiddenException();
 
-      const payload = this.jwtService.verifyRefreshToken(token);
+      await this.addTokenToBlackList(payload.jti);
 
       const user = await this.db.query.users.findFirst({
         columns: { id: true, email: true, status: true },
@@ -164,14 +175,22 @@ export default class AuthService {
 
       if (!user) throw new ForbiddenException();
 
-      const accessToken = this.jwtService.signAccessToken({
-        userId: user.id,
-        status: user.status,
-      });
+      const jti = randomUUID();
 
-      const refreshToken = this.jwtService.signRefreshToken({
-        userId: user.id,
-      });
+      const accessToken = this.jwtService.signAccessToken(
+        {
+          userId: user.id,
+          status: user.status,
+        },
+        jti,
+      );
+
+      const refreshToken = this.jwtService.signRefreshToken(
+        {
+          userId: user.id,
+        },
+        jti,
+      );
 
       return { accessToken, refreshToken };
     } catch (error) {
@@ -187,38 +206,33 @@ export default class AuthService {
     }
   }
 
-  async addTokenToBlackList(token: string, type: 'access' | 'refresh') {
+  async addTokenToBlackList(jti: string) {
     try {
-      const verifiedData =
-        type === 'access'
-          ? this.jwtService.verifyAccessToken(token)
-          : this.jwtService.verifyRefreshToken(token);
-
-      const hashedToken = createHash('sha256').update(token).digest('hex');
-
-      if (verifiedData)
-        await this.redis.set(
-          `bl:${hashedToken}`,
-          '1',
-          'EX',
-          type === 'access' ? 21600 : 172800,
-        );
+      await this.redis.set(`bl:${jti}`, '1', 'EX', 172800);
     } catch (error) {
       this.logger.log('Save blacklist failed');
     }
   }
 
-  async checkTokenInBlacklist(token: string) {
-    const hashedToken = createHash('sha256').update(token).digest('hex');
-
-    const exist = await this.redis.get(`bl:${hashedToken}`);
+  async checkTokenInBlacklist(jti: string) {
+    const exist = await this.redis.get(`bl:${jti}`);
     return !!exist;
   }
 
-  async logout(token: string, refreshToken: string) {
-    await Promise.allSettled([
-      this.addTokenToBlackList(token, 'access'),
-      this.addTokenToBlackList(refreshToken, 'refresh'),
-    ]);
+  async logout(refreshToken: string) {
+    try {
+      const payload = this.jwtService.verifyRefreshToken(refreshToken);
+      await this.addTokenToBlackList(payload.jti);
+    } catch (error) {
+      if (
+        error instanceof TokenExpiredError ||
+        error instanceof JsonWebTokenError ||
+        error instanceof NotBeforeError ||
+        error instanceof SyntaxError
+      ) {
+        throw new UnauthorizedException();
+      }
+      this.logger.log('');
+    }
   }
 }

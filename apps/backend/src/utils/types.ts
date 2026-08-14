@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken';
 import { Request } from 'express';
 import { UserRoleEnum, UserStatusEnum } from './constants';
-export interface UserPayload extends jwt.JwtPayload {
+export interface UserPayload
+  extends Omit<jwt.JwtPayload, 'jti'>, Required<Pick<jwt.JwtPayload, 'jti'>> {
   userId: string;
   status: (typeof UserStatusEnum)[keyof typeof UserStatusEnum];
 }

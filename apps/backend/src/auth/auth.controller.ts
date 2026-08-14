@@ -8,7 +8,6 @@ import {
   SignInUserValidation,
   ValidateRegistrationOtpValidation,
 } from './auth.validation';
-import { Auth } from '../utils/common/decorators';
 
 @Controller('auth')
 export default class AuthController {
@@ -55,8 +54,7 @@ export default class AuthController {
   }
 
   @Delete('/logout')
-  @Auth()
   async logout(@Body() body: LogoutValidationSchema) {
-    await this.authService.logout(body.access, body.refresh);
+    await this.authService.logout(body.refresh);
   }
 }

@@ -35,7 +35,7 @@ export const signInUserValidation = z.object({
 export class SignInUserValidation extends createZodDto(signInUserValidation) {}
 
 export const refreshTokenValidation = z.object({
-  token: z.jwt(),
+  token: z.string(),
 });
 
 export class RefreshTokenValidation extends createZodDto(
@@ -43,8 +43,7 @@ export class RefreshTokenValidation extends createZodDto(
 ) {}
 
 export const logoutValidationSchema = z.object({
-  access: z.jwt(),
-  refresh: z.jwt(),
+  refresh: z.string(),
 });
 
 export class LogoutValidationSchema extends createZodDto(

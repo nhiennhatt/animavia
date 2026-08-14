@@ -12,10 +12,16 @@ export class JwtService {
     @Inject('REFRESH_PUBLIC_KEY') private readonly refreshPublicKey: string,
   ) {}
 
-  private sign(payload: object, privateKey: string, exInMin: number) {
+  private sign(
+    payload: object,
+    privateKey: string,
+    exInMin: number,
+    jti: string,
+  ) {
     return jwt.sign(payload, privateKey, {
       algorithm: this.ALGO,
       expiresIn: `${exInMin}min`,
+      jwtid: jti,
     });
   }
 
@@ -28,19 +34,19 @@ export class JwtService {
     }) as T;
   }
 
-  signAccessToken(payload: object) {
-    return this.sign(payload, this.accessPrivateKey, 360);
+  signAccessToken(payload: object, jti: string) {
+    return this.sign(payload, this.accessPrivateKey, 15, jti);
   }
 
-  signRefreshToken(payload: object) {
-    return this.sign(payload, this.refreshPrivateKey, 2880);
+  signRefreshToken(payload: object, jti: string) {
+    return this.sign(payload, this.refreshPrivateKey, 2880, jti);
   }
 
   verifyAccessToken(token: string): UserPayload {
     return this.verify(token, this.accessPublicKey);
   }
 
-  verifyRefreshToken(token: string): Pick<UserPayload, 'userId'> {
+  verifyRefreshToken(token: string): Pick<UserPayload, 'userId' | 'jti'> {
     return this.verify(token, this.refreshPublicKey);
   }
 }
