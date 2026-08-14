@@ -7,6 +7,7 @@ import {
   uuid,
   varchar,
   boolean,
+  text,
 } from 'drizzle-orm/pg-core';
 import { defineRelations, desc } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -64,13 +65,75 @@ export const habits = pgTable(
   (tb) => [index('owner_createdAt_idx').on(tb.ownerId, desc(tb.createdAt))],
 );
 
-export const dbRelations = defineRelations({ users, habits }, (r) => ({
-  habits: {
-    owner: r.one.users({
-      from: r.habits.ownerId,
-      to: r.users.id,
-    }),
-  },
-}));
+export const habitStatements = pgTable('habit_statements', {
+  id: uuid().primaryKey().defaultRandom(),
+  statement: varchar({ length: 260 }).notNull(),
+  source: varchar({ length: 120 }),
+  habitId: uuid('habit_id')
+    .notNull()
+    .references(() => habits.id, { onDelete: 'cascade' }),
+});
+
+export const habitLogs = pgTable('habit_logs', {
+  id: uuid().primaryKey().defaultRandom(),
+  loggedAt: timestamp('logged_at').defaultNow(),
+  thought: text(),
+  habitId: uuid('habit_id')
+    .notNull()
+    .references(() => habits.id, { onDelete: 'cascade' }),
+});
+
+export const habitValues = pgTable('habit_values', {
+  id: uuid().primaryKey().defaultRandom(),
+  value: varchar({ length: 190 }).notNull(),
+  habitId: uuid('habit_id')
+    .notNull()
+    .references(() => habits.id, { onDelete: 'cascade' }),
+});
+
+export const habitBackupPlans = pgTable('habit_backup_plans', {
+  id: uuid().primaryKey().defaultRandom(),
+  case: varchar({ length: 200 }).notNull(),
+  then: varchar({ length: 200 }).notNull(),
+  habitId: uuid('habit_id')
+    .notNull()
+    .references(() => habits.id, { onDelete: 'cascade' }),
+});
+
+export const dbRelations = defineRelations(
+  { users, habits, habitLogs, habitStatements, habitValues, habitBackupPlans },
+  (r) => ({
+    habits: {
+      owner: r.one.users({
+        from: r.habits.ownerId,
+        to: r.users.id,
+      }),
+    },
+    habitLogs: {
+      habit: r.one.habits({
+        from: r.habitLogs.habitId,
+        to: r.habits.id,
+      }),
+    },
+    habitBackupPlans: {
+      habit: r.one.habits({
+        from: r.habitBackupPlans.habitId,
+        to: r.habits.id,
+      }),
+    },
+    habitStatements: {
+      habit: r.one.habits({
+        from: r.habitStatements.habitId,
+        to: r.habits.id,
+      }),
+    },
+    habitValues: {
+      habit: r.one.habits({
+        from: r.habitValues.habitId,
+        to: r.habits.id,
+      }),
+    },
+  }),
+);
 
 export type AppPgDatabaseType = NodePgDatabase<typeof dbRelations>;

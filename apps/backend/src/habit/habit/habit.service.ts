@@ -8,28 +8,31 @@ import {
   GenerateHabitValidation,
   UpdateHabitValidation,
 } from './habit.validation';
-import { habits, type AppPgDatabaseType } from '../db/db.schema';
+import { habits, type AppPgDatabaseType } from '../../db/db.schema';
 import { and, desc, eq, gt, lt, or, SQL } from 'drizzle-orm';
-import { HabitType } from '../utils/constants';
+import { HabitType } from '../../utils/constants';
 
 @Injectable()
 export default class HabitService {
   constructor(@Inject('DB') private readonly db: AppPgDatabaseType) {}
 
   async generateHabit(userId: string, habit: GenerateHabitValidation) {
-    const generatedHabit = await this.db.insert(habits).values({
-      htype: habit.htype,
-      domain: habit.domain,
-      name: habit.name,
-      objective: habit.objective,
-      pinned: habit.pinned,
-      weeklyGoal: habit.weeklyGoal,
-      ownerId: userId,
-    });
+    const generatedHabit = await this.db
+      .insert(habits)
+      .values({
+        htype: habit.htype,
+        domain: habit.domain,
+        name: habit.name,
+        objective: habit.objective,
+        pinned: habit.pinned,
+        weeklyGoal: habit.weeklyGoal,
+        ownerId: userId,
+      })
+      .returning();
 
-    if (generatedHabit.rowCount === 0) throw new InternalServerErrorException();
+    if (generatedHabit.length <= 0) throw new InternalServerErrorException();
 
-    return { message: 'ok' };
+    return generatedHabit[0];
   }
 
   async updateHabit(
@@ -98,7 +101,7 @@ export default class HabitService {
 
     if (!result || result.length === 0) throw new NotFoundException();
 
-    return result;
+    return result[0];
   }
 
   async deleteHabit(id: string, userId: string) {

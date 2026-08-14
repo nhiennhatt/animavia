@@ -1,5 +1,5 @@
 import z from 'zod';
-import { HabitType, LifeDomains } from '../utils/constants';
+import { HabitType, LifeDomains } from '../../utils/constants';
 import { createZodDto } from 'nestjs-zod';
 
 export const generateHabitValidation = z.object({
@@ -39,3 +39,16 @@ export const updateHabitValidation = z
 export class UpdateHabitValidation extends createZodDto(
   updateHabitValidation,
 ) {}
+
+export const getOwnedHabitSchema = z.object({
+  size: z.coerce.number().int().min(1).max(10).default(5),
+  cursor: z.uuid().optional(),
+  htype: z.enum(Object.values(HabitType)).optional(),
+  cursorDatetime: z.iso
+    .datetime()
+    .transform((e) => new Date(e))
+    .optional(),
+  pinned: z.coerce.number().int().min(0).max(1).optional(),
+});
+
+export class GetOwnedHabitSchema extends createZodDto(getOwnedHabitSchema) {}

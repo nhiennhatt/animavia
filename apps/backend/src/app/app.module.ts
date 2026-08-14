@@ -10,7 +10,8 @@ import AuthModule from '../auth/auth.module';
 import DbModule from '../db/db.module';
 import RedisModule from '../redis/redis.module';
 import UserModule from '../user/user.module';
-import HabitModule from '../habit/habit.module';
+import HabitModule from '../habit/habit/habit.module';
+import StatementModule from '../habit/statement/statement.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import HabitModule from '../habit/habit.module';
     AuthModule,
     UserModule,
     HabitModule,
+    StatementModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_PIPE, useClass: ZodValidationPipe }],

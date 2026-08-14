@@ -17,12 +17,13 @@ import {
 import HabitService from './habit.service';
 import {
   GenerateHabitValidation,
+  GetOwnedHabitSchema,
   UpdateHabitValidation,
 } from './habit.validation';
 
-import { Auth, User } from '../utils/common/decorators';
-import { HabitType, UserStatusEnum } from '../utils/constants';
-import type { AppUser } from '../utils/types';
+import { Auth, User } from '../../utils/common/decorators';
+import { HabitType, UserStatusEnum } from '../../utils/constants';
+import type { AppUser } from '../../utils/types';
 
 @Controller('habit')
 export default class HabitController {
@@ -32,28 +33,14 @@ export default class HabitController {
   @Get('')
   async getOwnedHabits(
     @User() user: AppUser,
-    @Query('size', new ParseIntPipe({ optional: true })) size?: number,
-    @Query('cursor', new ParseUUIDPipe({ optional: true })) cursor?: string,
-    @Query(
-      'htype',
-      new ParseEnumPipe(Object.values(HabitType), { optional: true }),
-    )
-    htype?: (typeof HabitType)[keyof typeof HabitType],
-    @Query('cursor_datetime', new ParseDatePipe({ optional: true }))
-    cursorDatetime?: Date,
-    @Query(
-      'pinned',
-      new ParseEnumPipe(['1', '0'], { optional: true }),
-      new ParseIntPipe({ optional: true }),
-    )
-    pinned?: number,
+    @Query() query: GetOwnedHabitSchema,
   ) {
     return await this.habitService.getOwnedHabits(user.id, {
-      size,
-      cursor,
-      cursorDatetime,
-      htype,
-      pinned: pinned === undefined ? pinned : !!pinned,
+      size: query.size,
+      cursor: query.cursor,
+      cursorDatetime: query.cursorDatetime,
+      htype: query.htype,
+      pinned: query.pinned === undefined ? query.pinned : !!query.pinned,
     });
   }
 
