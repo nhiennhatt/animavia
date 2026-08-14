@@ -38,11 +38,14 @@ export function Login() {
 
       const result = await login(validation);
 
-      if (!result.success) throw result;
+      if (!result.success) {
+        setError({ general: "Email hoặc mật khẩu không hợp lệ" });
+        throw result.error;
+      }
     },
     onSuccess: (data) => {
-      router.push("/");
       queryClient.invalidateQueries({ queryKey: ["authenticatedUser"] });
+      router.push("/");
     },
     onError: (err: unknown) => {
       if (err instanceof z.ZodError) {

@@ -1,5 +1,3 @@
-import { cookies } from "next/headers";
-
 import { AppError } from "@/lib/app-error";
 import { regainToken } from "@/services/user.service";
 import { AppServerResponse } from "@/types/app";
@@ -19,9 +17,6 @@ export const withProtected = <TArgs extends any[], TResult>(
         }
 
         if (error.code === "UNAUTHORIZED") {
-          const cookieStore = await cookies();
-          cookieStore.delete("token");
-          cookieStore.delete("refresh");
           return {
             success: false,
             code: "UNAUTHORIZED",

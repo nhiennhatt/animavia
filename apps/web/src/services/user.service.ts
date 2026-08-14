@@ -9,7 +9,7 @@ import {
   ILoginBodySchema,
 } from "@/validations/user.validation";
 import { cookies } from "next/headers";
-import z, { success } from "zod";
+import z from "zod";
 import { withProtected } from "../helpers/with-protected";
 
 export const login = async (
@@ -43,8 +43,14 @@ export const login = async (
 
     const cookieStore = await cookies();
 
-    cookieStore.set("token", res.data.accessToken);
-    cookieStore.set("refresh", res.data.refreshToken);
+    cookieStore.set("token", res.data.accessToken, {
+      httpOnly: true,
+      sameSite: true,
+    });
+    cookieStore.set("refresh", res.data.refreshToken, {
+      httpOnly: true,
+      sameSite: true,
+    });
 
     return { data: undefined, success: true, code: res.code };
   } catch (err) {
@@ -146,17 +152,17 @@ export const getAuthenticatedUserInform = withProtected(
 
 export const logout = async () => {
   const cookieStore = await cookies();
-  const access = cookieStore.get("token");
   const refresh = cookieStore.get("refresh");
 
-  if (!access || !refresh) return;
+  if (!refresh) return;
 
   try {
-    await fetch("http://localhost:3000/auth/logout", {
+    const a = await fetch("http://localhost:3000/auth/logout", {
       method: "DELETE",
-      body: JSON.stringify({ access: access.value, refresh: refresh.value }),
-      headers: [["Authorization", `bearer ${access}`]],
+      body: JSON.stringify({ refresh: refresh.value }),
+      headers: [["Content-Type", "application/json"]],
     });
+    console.log(JSON.stringify(await a.json()));
   } catch (error) {
   } finally {
     cookieStore.delete("token");
