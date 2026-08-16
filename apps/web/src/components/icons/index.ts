@@ -17,3 +17,7 @@ export * from "./slash";
 export * from "./sword";
 export * from "./sunrise";
 export * from "./circle-line-heart";
+export * from "./drinking";
+export * from "./community";
+export * from "./intellectual";
+export * from "./plant";

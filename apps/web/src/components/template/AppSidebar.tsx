@@ -20,6 +20,7 @@ import { Button } from "../ui/button";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logout } from "@/services/user.service";
+import Image from "next/image";
 
 export function AppSidebar() {
   const { user, loading } = useUser();
@@ -39,13 +40,24 @@ export function AppSidebar() {
     <Sidebar className="border-none">
       <SidebarHeader className="py-5 space-y-3">
         <div className="mx-3">
-          <Link
-            href="/"
-            className="text-4xl font-bold font-heading text-primary transition-[text-shadow] text-shadow-xs hover:text-shadow-secondary"
-          >
-            Animavia
+          <Link href="/" className="flex gap-x-1 items-center">
+            <div>
+              <Image
+                preload
+                src="/images/LEAF.png"
+                alt="leaf-symbol"
+                width={40}
+                height={40}
+                className="size-12"
+              />
+            </div>
+            <div>
+              <span className="text-3xl font-bold font-heading text-primary transition-[text-shadow] text-shadow-xs hover:text-shadow-secondary">
+                Animavia
+              </span>
+              <p className="mx-0.5 font-sans text-xs font-normal leading-1.5">Dẫn lối tâm hồn</p>
+            </div>
           </Link>
-          <p className="mx-0.5 font-sans font-normal">Dẫn lối tâm hồn</p>
         </div>
         <SidebarMenu>
           <SidebarMenuItem className="px-2">

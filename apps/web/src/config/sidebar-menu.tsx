@@ -1,4 +1,4 @@
-import { CandleIcon, CardsIcon } from "@/components/icons";
+import { CandleIcon, CardsIcon, DrinkingIcon } from "@/components/icons";
 import {
   BookHeart,
   Calendar,
@@ -19,6 +19,7 @@ export const sidebarMenuItems = [
   "outdoor",
   "supportCenter",
   "SWOT",
+  "habit",
 ] as const;
 
 export const sidebarMenu: Record<
@@ -38,6 +39,11 @@ export const sidebarMenu: Record<
     icon: (props: SVGProps<SVGSVGElement>) => <BookHeart {...props} />,
     href: "/diary",
     name: "Nhật ký",
+  },
+  habit: {
+    icon: DrinkingIcon,
+    href: "/habit",
+    name: "Thói quen",
   },
   dailyCard: {
     icon: CardsIcon,

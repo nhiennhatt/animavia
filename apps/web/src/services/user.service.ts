@@ -104,6 +104,7 @@ export const regainToken = async (): Promise<
       code: res.code,
     };
   } catch (err) {
+    console.log(err)
     return {
       success: false,
       code: "INTERNAL_ERROR",

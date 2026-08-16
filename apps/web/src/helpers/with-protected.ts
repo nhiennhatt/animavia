@@ -9,9 +9,11 @@ export const withProtected = <TArgs extends any[], TResult>(
     try {
       return await action(...args);
     } catch (error) {
+      console.log(error);
       if (error instanceof AppError) {
         if (error.code === "TOKEN_EXPIRED") {
           const newTokenReq = await regainToken();
+          console.log(newTokenReq)
           if (!newTokenReq.success) return newTokenReq;
           return action(...args);
         }
