@@ -32,7 +32,7 @@ export function ReviewStep() {
               const config = lifeDomainList.find((i) => i.value === d);
               if (!config) return;
               return (
-                <Badge variant="outline" className="text-sm h-auto">
+                <Badge key={d} variant="outline" className="text-sm h-auto">
                   <config.Icon />
                   {config.name}
                 </Badge>

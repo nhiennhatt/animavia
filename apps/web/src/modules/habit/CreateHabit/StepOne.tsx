@@ -16,7 +16,7 @@ export function StepOne() {
         <FieldLabel htmlFor="name">Tên thói quen: *</FieldLabel>
         <Input
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          value={formData.name}
+          value={formData.name || ""}
           aria-invalid={!!error.name}
           type="text"
           id="name"
@@ -29,7 +29,7 @@ export function StepOne() {
           onChange={(e) =>
             setFormData({ ...formData, objective: e.target.value })
           }
-          value={formData.objective}
+          value={formData.objective || ""}
           aria-invalid={!!error.objective}
           className="resize-none"
           id="objective"

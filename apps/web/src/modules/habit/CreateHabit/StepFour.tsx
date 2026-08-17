@@ -45,6 +45,7 @@ export function StepFour() {
                   },
                 })
               }
+              value={formData.statement?.source || ""}
               placeholder="Tên tác giả hoặc nguồn trích dẫn... (tuỳ chọn)"
               className="flex-1 outline-none py-1"
             />

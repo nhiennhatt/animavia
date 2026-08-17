@@ -4,25 +4,60 @@ import z from "zod";
 import Link from "next/link";
 import { motion } from "motion/react";
 import { useCallback, useState } from "react";
-import { ArrowLeft, ArrowRight, Plus } from "lucide-react";
+import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import { SteppedCreateHabitSchema } from "@/validations/habit.validation";
+import {
+  createHabitQuoteSchema,
+  createHabitSchema,
+  SteppedCreateHabitSchema,
+} from "@/validations/habit.validation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormDataContext } from "./context/form-data-context";
 import { cn } from "@/lib/utils";
 import { createHabitStepConfig } from "@/config/create-habit-steps-config";
+import { useUser } from "@/hooks/use-user";
+import { useMutation } from "@tanstack/react-query";
+import { createHabit } from "@/services/habit.service";
 
 export function CreateHabit() {
-  const [formData, setFormData] = useState<Partial<SteppedCreateHabitSchema>>({
+  const { user, loading } = useUser();
+  const [formData, setFormData] = useState<SteppedCreateHabitSchema>({
     name: "",
-    objective: "",
+    domain: [],
     weekly: 1,
+    htype: "HTYPE_235",
   });
   const [stepNumber, setStepNumber] = useState<number>(0);
   const [error, setError] = useState<
     Partial<Record<keyof SteppedCreateHabitSchema, [string]>>
   >({});
+
+  const { mutate: handleCreateHabit, isPending } = useMutation({
+    mutationFn: async (body: SteppedCreateHabitSchema) => {
+      const createHabitValidation =
+        await createHabitSchema.safeParseAsync(body);
+      if (!createHabitValidation.success) throw createHabitValidation.error;
+
+      const creationResult = await createHabit(createHabitValidation.data);
+
+      if (!creationResult.success) throw creationResult.error;
+
+      console.log(creationResult.data);
+    },
+    onError: (e) => {
+      console.log(e);
+    },
+  });
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user) {
+    return <div>Vui lòng đăng nhập</div>;
+  }
+
   const currentStep = createHabitStepConfig[stepNumber];
 
   const nextStep = useCallback(
@@ -34,6 +69,7 @@ export function CreateHabit() {
           setError(z.flattenError(validate.error).fieldErrors);
           return;
         }
+        setFormData({ ...formData, ...validate.data });
       } else {
         setFormData({
           ...formData,
@@ -135,6 +171,7 @@ export function CreateHabit() {
               onClick={previousStep}
               variant="outline"
               className="float-start"
+              disabled={isPending}
             >
               <ArrowLeft />
               Quay lại
@@ -142,20 +179,27 @@ export function CreateHabit() {
           )}
           <div className="float-end space-x-2">
             {currentStep.skippable && (
-              <Button variant="outline" onClick={() => nextStep(true)}>
+              <Button
+                disabled={isPending}
+                variant="outline"
+                onClick={() => nextStep(true)}
+              >
                 Bỏ qua
               </Button>
             )}
             {stepNumber < createHabitStepConfig.length - 1 && (
-              <Button onClick={() => nextStep()}>
-                Tiếp theo
+              <Button disabled={isPending} onClick={() => nextStep()}>
+                Tiếp tục
                 <ArrowRight />
               </Button>
             )}
             {stepNumber === createHabitStepConfig.length - 1 && (
-              <Button>
-                <Plus />
-                Thêm mới
+              <Button
+                disabled={isPending}
+                onClick={() => handleCreateHabit(formData)}
+              >
+                <Save />
+                Hoàn tất
               </Button>
             )}
           </div>
