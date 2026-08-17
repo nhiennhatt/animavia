@@ -37,9 +37,8 @@ export default class HabitController {
   ) {
     return await this.habitService.getOwnedHabits(user.id, {
       size: query.size,
-      cursor: query.cursor,
-      cursorDatetime: query.cursorDatetime,
       htype: query.htype,
+      page: query.page,
       pinned: query.pinned === undefined ? query.pinned : !!query.pinned,
     });
   }

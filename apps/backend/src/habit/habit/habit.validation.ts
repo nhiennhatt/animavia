@@ -42,13 +42,9 @@ export class UpdateHabitValidation extends createZodDto(
 
 export const getOwnedHabitSchema = z.object({
   size: z.coerce.number().int().min(1).max(10).default(5),
-  cursor: z.uuid().optional(),
   htype: z.enum(Object.values(HabitType)).optional(),
-  cursorDatetime: z.iso
-    .datetime()
-    .transform((e) => new Date(e))
-    .optional(),
   pinned: z.coerce.number().int().min(0).max(1).optional(),
+  page: z.coerce.number().int().min(0).max(10).default(1).optional(),
 });
 
 export class GetOwnedHabitSchema extends createZodDto(getOwnedHabitSchema) {}

@@ -1,4 +1,6 @@
+import { and, count, desc, eq, getColumns, sql } from 'drizzle-orm';
 import {
+  BadRequestException,
   Inject,
   Injectable,
   InternalServerErrorException,
@@ -8,8 +10,11 @@ import {
   GenerateHabitValidation,
   UpdateHabitValidation,
 } from './habit.validation';
-import { habits, type AppPgDatabaseType } from '../../db/db.schema';
-import { and, desc, eq, gt, lt, or, SQL } from 'drizzle-orm';
+import {
+  habits,
+  habitStatements,
+  type AppPgDatabaseType,
+} from '../../db/db.schema';
 import { HabitType } from '../../utils/constants';
 
 @Injectable()
@@ -17,18 +22,28 @@ export default class HabitService {
   constructor(@Inject('DB') private readonly db: AppPgDatabaseType) {}
 
   async generateHabit(userId: string, habit: GenerateHabitValidation) {
-    const generatedHabit = await this.db
-      .insert(habits)
-      .values({
-        htype: habit.htype,
-        domain: habit.domain,
-        name: habit.name,
-        objective: habit.objective,
-        pinned: habit.pinned,
-        weeklyGoal: habit.weeklyGoal,
-        ownerId: userId,
-      })
-      .returning();
+    const generatedHabit = await this.db.transaction(async (tx) => {
+      const habitAmount = await tx
+        .select({ count: count(habits.id) })
+        .from(habits)
+        .where(eq(habits.ownerId, userId));
+
+      if (habitAmount[0].count >= 10)
+        throw new BadRequestException('OUT_OF_LIMIT');
+
+      return await tx
+        .insert(habits)
+        .values({
+          htype: habit.htype,
+          domain: habit.domain,
+          name: habit.name,
+          objective: habit.objective,
+          pinned: habit.pinned,
+          weeklyGoal: habit.weeklyGoal,
+          ownerId: userId,
+        })
+        .returning();
+    });
 
     if (generatedHabit.length <= 0) throw new InternalServerErrorException();
 
@@ -53,44 +68,64 @@ export default class HabitService {
   async getOwnedHabits(
     userId: string,
     {
-      size = 10,
-      cursor,
-      cursorDatetime,
+      size = 5,
+      page = 1,
       htype,
       pinned,
+      includeQuote = true,
     }: {
       size?: number;
-      cursor?: string;
-      cursorDatetime?: Date;
+      page?: number;
       htype?: (typeof HabitType)[keyof typeof HabitType];
       pinned?: boolean;
+      includeQuote?: boolean;
     },
-  ) {
+  ): Promise<
+    (typeof habits.$inferSelect & {
+      [K in keyof typeof habitStatements.$inferSelect]?:
+        (typeof habitStatements.$inferSelect)[K] | null;
+    })[]
+  > {
     const condition = [eq(habits.ownerId, userId)];
-
-    if (!cursor && cursorDatetime) {
-      condition.push(lt(habits.createdAt, cursorDatetime));
-    }
-
-    if (cursor && cursorDatetime) {
-      condition.push(
-        or(
-          lt(habits.createdAt, cursorDatetime),
-          and(eq(habits.createdAt, cursorDatetime), gt(habits.id, cursor)),
-        ) as SQL,
-      );
-    }
 
     if (pinned !== undefined) condition.push(eq(habits.pinned, pinned));
 
     if (htype) condition.push(eq(habits.htype, htype));
 
-    return await this.db
+    const habitQuery = this.db
       .select()
       .from(habits)
       .where(and(...condition))
       .orderBy(desc(habits.createdAt))
+      .offset((page - 1) * size)
       .limit(Math.min(size, 10));
+
+    if (includeQuote) {
+      const habitQueryAlias = habitQuery.as('habits');
+      const statementQueryAlias = this.db
+        .select({
+          statement: habitStatements.statement,
+          source: habitStatements.source,
+        })
+        .from(habitStatements)
+        .where(eq(habitQueryAlias.id, habitStatements.habitId))
+        .limit(1)
+        .orderBy(sql`RANDOM()`)
+        .as('statement');
+
+      return await this.db
+        .select({
+          ...getColumns(habitQueryAlias),
+          statement: statementQueryAlias.statement,
+          source: statementQueryAlias.source,
+        })
+        .from(habitQueryAlias)
+        .leftJoinLateral(statementQueryAlias, sql`true`);
+    }
+
+    const result = await habitQuery;
+
+    return result;
   }
 
   async getHabit(id: string, userId: string) {
