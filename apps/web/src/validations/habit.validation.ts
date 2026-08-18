@@ -11,18 +11,18 @@ export const createHabitSchema = z.object({
 
 export interface CreateHabitSchema extends z.infer<typeof createHabitSchema> {}
 
-export const createHabitQuoteSchema = z.object({
+export const createHabitStatementSchema = z.object({
   habitId: z.uuid(),
   statement: z.string().min(4).max(240).nonempty(),
   source: z.string().max(110).optional(),
 });
 
-export interface CreateHabitQuoteSchema extends z.infer<
-  typeof createHabitQuoteSchema
+export interface CreateHabitStatementSchema extends z.infer<
+  typeof createHabitStatementSchema
 > {}
 
 export const steppedCreateHabitSchema = createHabitSchema.extend({
-  statement: createHabitQuoteSchema.omit({ habitId: true }).optional(),
+  statement: createHabitStatementSchema.omit({ habitId: true }).optional(),
 });
 
 export interface SteppedCreateHabitSchema extends z.infer<

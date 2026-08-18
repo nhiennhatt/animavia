@@ -8,7 +8,7 @@ import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
-  createHabitQuoteSchema,
+  createHabitStatementSchema,
   createHabitSchema,
   SteppedCreateHabitSchema,
 } from "@/validations/habit.validation";
@@ -17,12 +17,13 @@ import { FormDataContext } from "./context/form-data-context";
 import { cn } from "@/lib/utils";
 import { createHabitStepConfig } from "@/config/create-habit-steps-config";
 import { useUser } from "@/hooks/use-user";
-import { useMutation } from "@tanstack/react-query";
-import { createHabit } from "@/services/habit.service";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { addHabitStatement, createHabit } from "@/services/habit.service";
 import { useRouter } from "next/navigation";
 
 export function CreateHabit() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { user, loading } = useUser();
   const [formData, setFormData] = useState<SteppedCreateHabitSchema>({
     name: "",
@@ -45,13 +46,31 @@ export function CreateHabit() {
 
       if (!creationResult.success) throw creationResult.error;
 
-      console.log(creationResult.data);
+      if (body.statement && body.statement.statement) {
+        const createStatementValidation =
+          await createHabitStatementSchema.safeParseAsync({
+            statement: body.statement.statement,
+            source: body.statement.source || null,
+            habitId: creationResult.data.id,
+          });
+
+        if (!createStatementValidation.success)
+          throw createStatementValidation.error;
+
+        const statementCreationResult = await addHabitStatement(
+          createStatementValidation.data,
+        );
+      }
+
+      return creationResult.data.id;
     },
     onError: (e) => {
       console.log(e);
     },
-    onSuccess: () => {
-      router.push("/habit");
+    onSuccess: (id: string) => {
+      queryClient.invalidateQueries({ queryKey: ["getOwnedHabits"] });
+      console.log(id);
+      router.push(`/habit`);
     },
   });
 

@@ -1,9 +1,12 @@
 "use server";
 
 import { HabitTypeEnum, LifeDomainEnum } from "@/helpers/constants";
+import { AppError } from "@/lib/app-error";
 import { ApiResponse, AppServerResponse } from "@/types/app";
-import { Habit } from "@/types/entities";
+import { Habit, Statement } from "@/types/entities";
 import {
+  createHabitStatementSchema,
+  CreateHabitStatementSchema,
   createHabitSchema,
   CreateHabitSchema,
   GetHabitsSchema,
@@ -13,7 +16,7 @@ import z from "zod";
 
 export async function createHabit(
   body: CreateHabitSchema,
-): Promise<AppServerResponse<{ id: string }>> {
+): Promise<AppServerResponse<Habit>> {
   const validation = await createHabitSchema.safeParseAsync(body);
   if (!validation.success)
     return {
@@ -43,7 +46,7 @@ export async function createHabit(
       method: "POST",
     });
 
-    const body = (await apiResponse.json()) as ApiResponse<{ id: string }>;
+    const body = (await apiResponse.json()) as ApiResponse<Habit>;
     if (body.error)
       return {
         success: false,
@@ -93,4 +96,63 @@ export async function getHabits(
     code: "Success",
     data: response.data,
   };
+}
+
+export async function addHabitStatement(
+  body: CreateHabitStatementSchema,
+): Promise<AppServerResponse<Statement>> {
+  const validation = await createHabitStatementSchema.safeParseAsync(body);
+  if (!validation.success)
+    return {
+      success: false,
+      code: "VALIDATION_FAILED",
+      error: z.flattenError(validation.error),
+    };
+
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  if (!token)
+    return {
+      success: false,
+      code: "UNAUTHORIZED",
+      error: "UNAUTHORIZED",
+    };
+
+  try {
+    const createResult = await fetch("http://localhost:3000/statement", {
+      headers: [
+        ["Authorization", `Bearer ${token}`],
+        ["Content-Type", "application/json"],
+      ],
+      body: JSON.stringify(validation.data),
+      method: "POST",
+    });
+
+    const createReponse: ApiResponse<Statement> = await createResult.json();
+
+    if (createReponse.error)
+      throw new AppError(
+        createReponse.code,
+        createReponse.code,
+        createReponse.error,
+      );
+
+    return {
+      success: true,
+      code: "Success",
+      data: createReponse.data,
+    };
+  } catch (err) {
+    if (err instanceof AppError) {
+      console.log(err.error);
+      throw err;
+    }
+
+    return {
+      success: false,
+      code: "INTERNAL_ERROR",
+      error: "INTERNAL_ERROR",
+    };
+  }
 }

@@ -12,7 +12,6 @@ export function Habit() {
     queryKey: ["getOwnedHabits"],
     queryFn: async () => {
       const result = await getHabits();
-      console.log(result.data);
       return result;
     },
   });

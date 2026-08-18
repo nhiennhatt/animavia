@@ -11,3 +11,10 @@ export interface Habit {
   pinned: boolean;
   createdAt: Date;
 }
+
+export interface Statement {
+  id: string;
+  statement: string;
+  source: string | null;
+  habitId: string;
+}
