@@ -72,6 +72,42 @@ export async function getHabits(
   };
 }
 
+export async function deleteHabit({
+  id,
+}: {
+  id: string;
+}): Promise<AppServerResponse<undefined>> {
+  const idValidation = await z.uuid().safeParseAsync(id);
+
+  if (!idValidation.success) {
+    return {
+      success: false,
+      code: "VALIDATION_FAILED",
+      error: z.flattenError(idValidation.error),
+    };
+  }
+
+  const apiResponse = await protectedHttpClient(`/habit/${id}`, {
+    method: "DELETE",
+  });
+
+  const res: ApiResponse<void> = apiResponse.data;
+
+  if (res.error) {
+    return {
+      success: false,
+      code: res.code,
+      error: res.error,
+    };
+  }
+
+  return {
+    success: true,
+    code: "Success",
+    data: undefined,
+  };
+}
+
 export async function addHabitStatement(
   body: CreateHabitStatementSchema,
 ): Promise<AppServerResponse<Statement>> {

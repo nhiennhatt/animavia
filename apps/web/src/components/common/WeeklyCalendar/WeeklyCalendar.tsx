@@ -14,7 +14,7 @@ export function WeeklyCalendar({ loggedDates = [] }: { loggedDates?: Date[] }) {
     <div
       className={cn(
         "grid grid-cols-7 gap-x-3",
-        "*:aspect-square *:bg-white *:rounded-sm *:flex *:items-center *:border *:border-accent *:justify-center",
+        "*:aspect-square *:bg-white *:rounded-full *:flex *:items-center *:border *:border-accent *:justify-center",
         "*:data-active:bg-primary *:data-active:text-primary-foreground *:data-disabled:bg-accent",
         "*:data-[today=true]:ring-2 *:data-[today=true]:ring-primary"
       )}

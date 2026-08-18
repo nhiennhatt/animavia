@@ -1,20 +1,40 @@
 "use client";
 
-import { HabitCard } from "@/components/common/HabitCard";
+import { HabitCard } from "@/components/common/HabitCard/HabitCard";
 import { Button } from "@/components/ui/button";
 import { refreshableQuery } from "@/lib/refreshable-query";
-import { getHabits } from "@/services/habit.service";
-import { useQuery } from "@tanstack/react-query";
+import { deleteHabit, getHabits } from "@/services/habit.service";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import Link from "next/link";
+import z from "zod";
 
 export function Habit() {
+  const queryClient = useQueryClient();
+
   const { data: habits, isLoading } = useQuery({
     queryKey: ["getOwnedHabits"],
     queryFn: async () => {
       return await refreshableQuery({ hasParams: false, callback: getHabits });
     },
   });
+
+  const { mutate: handleDeleteHabit, isPending: isDeleting } = useMutation({
+    mutationFn: async (id: string) => {
+      await refreshableQuery({
+        hasParams: true,
+        callback: deleteHabit,
+        ValidationSchema: z.object({ id: z.uuid() }),
+        params: { id },
+      });
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: ["getOwnedHabits"],
+      });
+    },
+  });
+
   const exampleDates = [
     new Date(),
     new Date(),
@@ -41,7 +61,7 @@ export function Habit() {
             </p>
           </div>
           <div>
-            <Button className="px-4 py-5" asChild>
+            <Button className="px-4 py-5 rounded-lg" asChild>
               <Link href="/habit/create">
                 <Plus />
                 Gieo một thói quen
@@ -50,11 +70,16 @@ export function Habit() {
           </div>
         </div>
         <div>
-          <div className="grid grid-cols-2 gap-8">
+          <div className="grid grid-cols-2 gap-x-9 gap-y-16">
             {!isLoading &&
               habits?.data &&
               habits.data.map((h) => (
-                <HabitCard key={h.id} habit={h} loggedDates={exampleDates} />
+                <HabitCard
+                  key={h.id}
+                  habit={h}
+                  loggedDates={exampleDates}
+                  onDelete={handleDeleteHabit}
+                />
               ))}
           </div>
         </div>
