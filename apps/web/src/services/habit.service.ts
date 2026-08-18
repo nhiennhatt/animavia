@@ -1,6 +1,5 @@
 "use server";
 
-import { AppError } from "@/lib/app-error";
 import { protectedHttpClient } from "@/lib/http-client";
 import { ApiResponse, AppServerResponse } from "@/types/app";
 import { Habit, Statement } from "@/types/entities";
@@ -59,6 +58,13 @@ export async function getHabits(
     (Habit & { statement?: string; source?: string })[]
   > = apiResponse.data;
 
+  if (response.error)
+    return {
+      success: false,
+      error: response.error,
+      code: response.code,
+    };
+
   return {
     success: true,
     code: "Success",
@@ -85,11 +91,11 @@ export async function addHabitStatement(
   const createReponse: ApiResponse<Statement> = createResult.data;
 
   if (createReponse.error)
-    throw new AppError(
-      createReponse.code,
-      createReponse.code,
-      createReponse.error,
-    );
+    return {
+      code: createReponse.code,
+      success: false,
+      error: createReponse.error,
+    };
 
   return {
     success: true,

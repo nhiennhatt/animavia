@@ -52,6 +52,7 @@ export async function refreshableQuery<T extends z.ZodObject, R>({
           });
         }
         const refreshedTokenPairResult = await refreshPromise;
+        console.log(refreshedTokenPairResult);
         if (refreshedTokenPairResult.success) {
           return await determinedCallback();
         }
