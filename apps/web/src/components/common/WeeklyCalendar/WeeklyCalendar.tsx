@@ -16,6 +16,7 @@ export function WeeklyCalendar({ loggedDates = [] }: { loggedDates?: Date[] }) {
         "grid grid-cols-7 gap-x-3",
         "*:aspect-square *:bg-white *:rounded-sm *:flex *:items-center *:border *:border-accent *:justify-center",
         "*:data-active:bg-primary *:data-active:text-primary-foreground *:data-disabled:bg-accent",
+        "*:data-[today=true]:ring-2 *:data-[today=true]:ring-primary"
       )}
     >
       {daysInWeek.map((d, i) => {
@@ -26,6 +27,7 @@ export function WeeklyCalendar({ loggedDates = [] }: { loggedDates?: Date[] }) {
             key={`${i}-${d}`}
             data-active={isActive}
             data-disabled={!isActive && i < currentDayInWeek}
+            data-today={i === currentDayInWeek}
           >
             {d}
           </div>

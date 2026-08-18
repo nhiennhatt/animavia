@@ -28,3 +28,11 @@ export const steppedCreateHabitSchema = createHabitSchema.extend({
 export interface SteppedCreateHabitSchema extends z.infer<
   typeof steppedCreateHabitSchema
 > {}
+
+export const getHabitsSchema = z.object({
+  page: z.int().min(1).max(10).optional().default(1),
+  size: z.int().min(1).max(10).optional().default(5),
+  withRandomQuote: z.boolean().optional().default(false),
+});
+
+export interface GetHabitsSchema extends z.infer<typeof getHabitsSchema> {}

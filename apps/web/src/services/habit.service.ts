@@ -1,9 +1,12 @@
 "use server";
 
+import { HabitTypeEnum, LifeDomainEnum } from "@/helpers/constants";
 import { ApiResponse, AppServerResponse } from "@/types/app";
+import { Habit } from "@/types/entities";
 import {
   createHabitSchema,
   CreateHabitSchema,
+  GetHabitsSchema,
 } from "@/validations/habit.validation";
 import { cookies } from "next/headers";
 import z from "zod";
@@ -37,7 +40,7 @@ export async function createHabit(
         ["Authorization", `bearer ${token}`],
       ],
       body: JSON.stringify(data),
-      method: "POST"
+      method: "POST",
     });
 
     const body = (await apiResponse.json()) as ApiResponse<{ id: string }>;
@@ -62,4 +65,32 @@ export async function createHabit(
       error: "INTERNAL_ERROR",
     };
   }
+}
+
+export async function getHabits(
+  params: GetHabitsSchema = { page: 1, size: 5, withRandomQuote: true },
+): Promise<
+  AppServerResponse<(Habit & { statement?: string; source?: string })[]>
+> {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token")?.value;
+
+  const url = new URL("http://localhost:3000/habit");
+  Object.entries(params).forEach(([k, v]) => {
+    url.searchParams.append(k, `${v}`);
+  });
+
+  const apiResponse = await fetch(url.toString(), {
+    headers: [["Authorization", `Bearer ${token}`]],
+  });
+
+  const response: ApiResponse<
+    (Habit & { statement?: string; source?: string })[]
+  > = await apiResponse.json();
+
+  return {
+    success: true,
+    code: "Success",
+    data: response.data,
+  };
 }

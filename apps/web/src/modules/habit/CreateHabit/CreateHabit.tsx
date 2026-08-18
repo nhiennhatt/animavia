@@ -19,8 +19,10 @@ import { createHabitStepConfig } from "@/config/create-habit-steps-config";
 import { useUser } from "@/hooks/use-user";
 import { useMutation } from "@tanstack/react-query";
 import { createHabit } from "@/services/habit.service";
+import { useRouter } from "next/navigation";
 
 export function CreateHabit() {
+  const router = useRouter();
   const { user, loading } = useUser();
   const [formData, setFormData] = useState<SteppedCreateHabitSchema>({
     name: "",
@@ -47,6 +49,9 @@ export function CreateHabit() {
     },
     onError: (e) => {
       console.log(e);
+    },
+    onSuccess: () => {
+      router.push("/habit");
     },
   });
 

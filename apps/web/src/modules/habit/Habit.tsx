@@ -1,17 +1,21 @@
 "use client";
 
-import { WeeklyCalendar } from "@/components/common/WeeklyCalendar/WeeklyCalendar";
+import { HabitCard } from "@/components/common/HabitCard";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-} from "@/components/ui/card";
+import { getHabits } from "@/services/habit.service";
+import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
 import Link from "next/link";
 
 export function Habit() {
+  const { data: habits, isLoading } = useQuery({
+    queryKey: ["getOwnedHabits"],
+    queryFn: async () => {
+      const result = await getHabits();
+      console.log(result.data);
+      return result;
+    },
+  });
   const exampleDates = [
     new Date(),
     new Date(),
@@ -48,34 +52,11 @@ export function Habit() {
         </div>
         <div>
           <div className="grid grid-cols-2 gap-8">
-            <Card>
-              <CardHeader>
-                <h3>Thể dục nhẹ buổi sáng</h3>
-              </CardHeader>
-              <CardContent className="space-y-8">
-                <div className="space-y-2">
-                  <p>
-                    Khởi đầu ngày mới thật thư thái với 5 đến 15 phút giãn cơ êm
-                    ái bên khung cửa sổ phòng.
-                  </p>
-                  <div className="bg-secondary-container/30 ps-4 pe-2 py-1.5 border-s-4 border-s-secondary/70 box-border text-secondary-container-foreground rounded-e-xs">
-                    <q className="text-base text-justify italic">
-                      Dịu dàng với cơ thể lúc bình minh, để cả ngày được bao bọc
-                      trong sự bình an và dẻo dai.
-                    </q>
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <h5 className="font-medium text-base">
-                    Chặng đường tuần này
-                  </h5>
-                  <WeeklyCalendar loggedDates={exampleDates} />
-                </div>
-                <CardAction>
-                  <Button>Ghi lại hôm nay</Button>
-                </CardAction>
-              </CardContent>
-            </Card>
+            {!isLoading &&
+              habits?.data &&
+              habits.data.map((h) => (
+                <HabitCard key={h.id} habit={h} loggedDates={exampleDates} />
+              ))}
           </div>
         </div>
       </div>
