@@ -10,7 +10,7 @@ import {
 } from "@/validations/user.validation";
 import { cookies } from "next/headers";
 import z from "zod";
-import { withProtected } from "../helpers/with-protected";
+import { httpClient, protectedHttpClient } from "@/lib/http-client";
 
 export const login = async (
   body: ILoginBodySchema,
@@ -24,43 +24,33 @@ export const login = async (
       code: "VALIDATION_FAILED",
     };
 
-  try {
-    const data = await fetch("http://localhost:3000/auth/token", {
-      headers: [["Content-Type", "application/json"]],
-      body: JSON.stringify(validationResult.data),
-      method: "POST",
-    });
+  const data = await httpClient("/auth/token", {
+    data: validationResult.data,
+    method: "POST",
+  });
 
-    const res: ApiResponse<GetTokenPairDto> = await data.json();
+  const res: ApiResponse<GetTokenPairDto> = data.data;
 
-    if (res.error) {
-      return {
-        success: false,
-        error: res.error,
-        code: res.code,
-      };
-    }
-
-    const cookieStore = await cookies();
-
-    cookieStore.set("token", res.data.accessToken, {
-      httpOnly: true,
-      sameSite: true,
-    });
-    cookieStore.set("refresh", res.data.refreshToken, {
-      httpOnly: true,
-      sameSite: true,
-    });
-
-    return { data: undefined, success: true, code: res.code };
-  } catch (err) {
-    console.log(err);
+  if (res.error) {
     return {
       success: false,
-      error: { message: "internal error" },
-      code: "INTERNAL_ERROR",
+      error: res.error,
+      code: res.code,
     };
   }
+
+  const cookieStore = await cookies();
+
+  cookieStore.set("token", res.data.accessToken, {
+    httpOnly: true,
+    sameSite: true,
+  });
+  cookieStore.set("refresh", res.data.refreshToken, {
+    httpOnly: true,
+    sameSite: true,
+  });
+
+  return { data: undefined, success: true, code: res.code };
 };
 
 export const regainToken = async (): Promise<
@@ -75,81 +65,60 @@ export const regainToken = async (): Promise<
       code: "UNAUTHENTICATED",
       error: "UNAUTHENTICATED",
     };
+  const req = await httpClient("/auth/refresh", {
+    method: "POST",
+    data: { token: refresh.value },
+  });
 
-  try {
-    const req = await fetch("http://localhost:3000/auth/refresh", {
-      method: "POST",
-      body: JSON.stringify({ token: refresh.value }),
-      headers: [["Content-Type", "application/json"]],
-    });
+  const res: ApiResponse<GetTokenPairDto> = req.data;
 
-    const res: ApiResponse<GetTokenPairDto> = await req.json();
-
-    if (res.error)
-      return {
-        success: false,
-        error: res.error,
-        code: "UNAUTHENTICATED",
-      };
-
-    cookieStore.set("token", res.data.accessToken);
-    cookieStore.set("refresh", res.data.refreshToken);
-
-    return {
-      data: {
-        accessToken: res.data.accessToken,
-        refreshToken: res.data.refreshToken,
-      },
-      success: true,
-      code: res.code,
-    };
-  } catch (err) {
-    console.log(err)
+  if (res.error)
     return {
       success: false,
-      code: "INTERNAL_ERROR",
-      error: "INTERNAL_ERROR",
+      error: res.error,
+      code: "UNAUTHENTICATED",
     };
-  }
+
+  cookieStore.set("token", res.data.accessToken);
+  cookieStore.set("refresh", res.data.refreshToken);
+
+  return {
+    data: {
+      accessToken: res.data.accessToken,
+      refreshToken: res.data.refreshToken,
+    },
+    success: true,
+    code: res.code,
+  };
 };
 
-export const getAuthenticatedUserInform = withProtected(
-  async (): Promise<AppServerResponse<BaseUser | null>> => {
-    const cookieStore = await cookies();
-    const token = cookieStore.get("token");
+export const getAuthenticatedUserInform = async (): Promise<
+  AppServerResponse<BaseUser | null>
+> => {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("token");
 
-    if (!token)
-      return { code: "UNAUTHORIZED", success: false, error: "UNAUTHORIZED" };
+  if (!token)
+    return { code: "UNAUTHORIZED", success: false, error: "UNAUTHORIZED" };
 
-    const req = await fetch("http://localhost:3000/user", {
-      headers: [["Authorization", `Bearer ${token.value}`]],
-    });
+  const req = await protectedHttpClient("/user");
 
-    const res: ApiResponse<BaseUser | null> = await req.json();
+  const res: ApiResponse<BaseUser | null> = req.data;
 
-    if (res.error) {
-      if (res.code.toLowerCase() === "token_expired") {
-        throw new AppError("TOKEN_EXPIRED", "TOKEN_EXPIRED");
-      }
-
-      if (res.code.toLowerCase() === "unauthorized") {
-        throw new AppError("UNAUTHORIZED", "UNAUTHORIZED");
-      }
-
-      return {
-        success: false,
-        code: res.code,
-        error: res.error,
-      };
-    }
-
+  if (res.error) {
     return {
-      success: true,
-      code: "SUCCESS",
-      data: res.data,
+      success: false,
+      code: res.code,
+      error: res.error,
     };
-  },
-);
+  }
+
+  return {
+    success: true,
+    code: "SUCCESS",
+    data: res.data,
+  };
+};
 
 export const logout = async () => {
   const cookieStore = await cookies();
@@ -158,12 +127,10 @@ export const logout = async () => {
   if (!refresh) return;
 
   try {
-    const a = await fetch("http://localhost:3000/auth/logout", {
+    await httpClient("/auth/logout", {
       method: "DELETE",
-      body: JSON.stringify({ refresh: refresh.value }),
-      headers: [["Content-Type", "application/json"]],
+      data: { refresh: refresh.value },
     });
-    console.log(JSON.stringify(await a.json()));
   } catch (error) {
   } finally {
     cookieStore.delete("token");

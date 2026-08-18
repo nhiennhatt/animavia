@@ -2,6 +2,7 @@
 
 import { HabitCard } from "@/components/common/HabitCard";
 import { Button } from "@/components/ui/button";
+import { refreshableQuery } from "@/lib/refreshable-query";
 import { getHabits } from "@/services/habit.service";
 import { useQuery } from "@tanstack/react-query";
 import { Plus } from "lucide-react";
@@ -11,8 +12,7 @@ export function Habit() {
   const { data: habits, isLoading } = useQuery({
     queryKey: ["getOwnedHabits"],
     queryFn: async () => {
-      const result = await getHabits();
-      return result;
+      return await refreshableQuery({ hasParams: false, callback: getHabits });
     },
   });
   const exampleDates = [

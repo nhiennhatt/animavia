@@ -11,6 +11,7 @@ import {
   createHabitStatementSchema,
   createHabitSchema,
   SteppedCreateHabitSchema,
+  CreateHabitSchema,
 } from "@/validations/habit.validation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormDataContext } from "./context/form-data-context";
@@ -20,6 +21,8 @@ import { useUser } from "@/hooks/use-user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addHabitStatement, createHabit } from "@/services/habit.service";
 import { useRouter } from "next/navigation";
+import { refreshableQuery } from "@/lib/refreshable-query";
+import { Habit } from "@/types/entities";
 
 export function CreateHabit() {
   const router = useRouter();
@@ -38,28 +41,25 @@ export function CreateHabit() {
 
   const { mutate: handleCreateHabit, isPending } = useMutation({
     mutationFn: async (body: SteppedCreateHabitSchema) => {
-      const createHabitValidation =
-        await createHabitSchema.safeParseAsync(body);
-      if (!createHabitValidation.success) throw createHabitValidation.error;
-
-      const creationResult = await createHabit(createHabitValidation.data);
+      const creationResult = await refreshableQuery({
+        hasParams: true,
+        params: body,
+        ValidationSchema: createHabitSchema,
+        callback: createHabit,
+      });
 
       if (!creationResult.success) throw creationResult.error;
 
       if (body.statement && body.statement.statement) {
-        const createStatementValidation =
-          await createHabitStatementSchema.safeParseAsync({
-            statement: body.statement.statement,
-            source: body.statement.source || null,
+        const statementCreationResult = await refreshableQuery({
+          hasParams: true,
+          ValidationSchema: createHabitStatementSchema,
+          params: {
             habitId: creationResult.data.id,
-          });
-
-        if (!createStatementValidation.success)
-          throw createStatementValidation.error;
-
-        const statementCreationResult = await addHabitStatement(
-          createStatementValidation.data,
-        );
+            ...body.statement,
+          },
+          callback: addHabitStatement,
+        });
       }
 
       return creationResult.data.id;

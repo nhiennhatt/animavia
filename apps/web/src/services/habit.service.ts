@@ -1,7 +1,7 @@
 "use server";
 
-import { HabitTypeEnum, LifeDomainEnum } from "@/helpers/constants";
 import { AppError } from "@/lib/app-error";
+import { protectedHttpClient } from "@/lib/http-client";
 import { ApiResponse, AppServerResponse } from "@/types/app";
 import { Habit, Statement } from "@/types/entities";
 import {
@@ -11,7 +11,6 @@ import {
   CreateHabitSchema,
   GetHabitsSchema,
 } from "@/validations/habit.validation";
-import { cookies } from "next/headers";
 import z from "zod";
 
 export async function createHabit(
@@ -26,48 +25,25 @@ export async function createHabit(
     };
 
   const data = validation.data;
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
 
-  if (!token)
+  const apiResponse = await protectedHttpClient("/habit", {
+    data,
+    method: "POST",
+  });
+
+  const response = apiResponse.data as ApiResponse<Habit>;
+  if (response.error)
     return {
       success: false,
-      code: "UNAUTHORIZED",
-      error: "UNAUTHORIZED",
+      code: response.code,
+      error: response.error,
     };
 
-  try {
-    const apiResponse = await fetch("http://localhost:3000/habit", {
-      headers: [
-        ["Content-Type", "application/json"],
-        ["Authorization", `bearer ${token}`],
-      ],
-      body: JSON.stringify(data),
-      method: "POST",
-    });
-
-    const body = (await apiResponse.json()) as ApiResponse<Habit>;
-    if (body.error)
-      return {
-        success: false,
-        code: body.code,
-        error: body.error,
-      };
-
-    return {
-      success: true,
-      data: body.data,
-      code: "SUCCESS",
-    };
-  } catch (err) {
-    console.log(err);
-
-    return {
-      success: false,
-      code: "INTERNAL_ERROR",
-      error: "INTERNAL_ERROR",
-    };
-  }
+  return {
+    success: true,
+    data: response.data,
+    code: "SUCCESS",
+  };
 }
 
 export async function getHabits(
@@ -75,21 +51,13 @@ export async function getHabits(
 ): Promise<
   AppServerResponse<(Habit & { statement?: string; source?: string })[]>
 > {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
-
-  const url = new URL("http://localhost:3000/habit");
-  Object.entries(params).forEach(([k, v]) => {
-    url.searchParams.append(k, `${v}`);
-  });
-
-  const apiResponse = await fetch(url.toString(), {
-    headers: [["Authorization", `Bearer ${token}`]],
+  const apiResponse = await protectedHttpClient("/habit", {
+    params,
   });
 
   const response: ApiResponse<
     (Habit & { statement?: string; source?: string })[]
-  > = await apiResponse.json();
+  > = apiResponse.data;
 
   return {
     success: true,
@@ -109,50 +77,23 @@ export async function addHabitStatement(
       error: z.flattenError(validation.error),
     };
 
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+  const createResult = await protectedHttpClient("/statement", {
+    method: "POST",
+    data: validation.data,
+  });
 
-  if (!token)
-    return {
-      success: false,
-      code: "UNAUTHORIZED",
-      error: "UNAUTHORIZED",
-    };
+  const createReponse: ApiResponse<Statement> = createResult.data;
 
-  try {
-    const createResult = await fetch("http://localhost:3000/statement", {
-      headers: [
-        ["Authorization", `Bearer ${token}`],
-        ["Content-Type", "application/json"],
-      ],
-      body: JSON.stringify(validation.data),
-      method: "POST",
-    });
+  if (createReponse.error)
+    throw new AppError(
+      createReponse.code,
+      createReponse.code,
+      createReponse.error,
+    );
 
-    const createReponse: ApiResponse<Statement> = await createResult.json();
-
-    if (createReponse.error)
-      throw new AppError(
-        createReponse.code,
-        createReponse.code,
-        createReponse.error,
-      );
-
-    return {
-      success: true,
-      code: "Success",
-      data: createReponse.data,
-    };
-  } catch (err) {
-    if (err instanceof AppError) {
-      console.log(err.error);
-      throw err;
-    }
-
-    return {
-      success: false,
-      code: "INTERNAL_ERROR",
-      error: "INTERNAL_ERROR",
-    };
-  }
+  return {
+    success: true,
+    code: "Success",
+    data: createReponse.data,
+  };
 }

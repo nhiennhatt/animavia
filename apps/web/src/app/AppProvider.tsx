@@ -2,6 +2,7 @@
 
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { UserContext } from "@/contexts/user.context";
+import { refreshableQuery } from "@/lib/refreshable-query";
 import { getAuthenticatedUserInform } from "@/services/user.service";
 import {
   QueryClient,
@@ -17,7 +18,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
     {
       queryKey: ["authenticatedUser"],
       queryFn: async () => {
-        const res = await getAuthenticatedUserInform();
+        const res = await refreshableQuery({
+          callback: getAuthenticatedUserInform,
+          hasParams: false,
+        });
         if (!res.success) return null;
         return res.data;
       },
