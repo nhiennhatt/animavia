@@ -13,7 +13,7 @@ export function HabitCard({
 }: {
   habit: Habit & { statement?: string; source?: string };
   loggedDates?: Date[];
-  onDelete?: (id: string) => void;
+  onDelete?: (id: string, name: string) => void;
 }) {
   return (
     <div className="border border-neutral-100 shadow-sm px-4 py-4 rounded-md flex flex-col justify-between gap-y-7">
@@ -21,7 +21,9 @@ export function HabitCard({
         <div className="flex">
           <h3 className="flex-1">{habit.name}</h3>
           <div>
-            <HabitCardDropdownMenu onDelete={() => onDelete(habit.id)}>
+            <HabitCardDropdownMenu
+              onDelete={() => onDelete(habit.id, habit.name)}
+            >
               <Button
                 variant="ghost"
                 className="rounded-full outline-none"
@@ -45,7 +47,7 @@ export function HabitCard({
       </div>
       {(habit.objective || habit.statement) && (
         <div className="flex flex-col gap-y-1">
-          {habit.objective && <p>{habit.objective}</p>}
+          {habit.objective && <p className="text-sm">{habit.objective}</p>}
           {habit.statement && (
             <div className="border-s-4 border-s-secondary/50 ps-4 py-1 text-secondary">
               <p className="italic">
