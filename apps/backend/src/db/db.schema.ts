@@ -45,6 +45,7 @@ export const users = pgTable('users', {
   password: varchar({ length: 255 }).notNull(),
   status: userStatusPgEnum('status').default(UserStatusEnum.ACTIVE).notNull(),
   role: userRolePgEnum('role').default(UserRoleEnum.PRACTITIONER).notNull(),
+  timezone: varchar({ length: 50 }).notNull().default('Asia/Ho_Chi_Minh'),
 });
 
 export const habits = pgTable(
@@ -76,7 +77,12 @@ export const habitStatements = pgTable('habit_statements', {
 
 export const habitLogs = pgTable('habit_logs', {
   id: uuid().primaryKey().defaultRandom(),
-  loggedAt: timestamp('logged_at').defaultNow(),
+  loggedAt: timestamp('logged_at', { withTimezone: false })
+    .defaultNow()
+    .notNull(),
+  forDate: timestamp('for_date', { withTimezone: false })
+    .defaultNow()
+    .notNull(),
   thought: text(),
   habitId: uuid('habit_id')
     .notNull()

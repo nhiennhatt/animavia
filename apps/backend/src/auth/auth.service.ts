@@ -78,6 +78,7 @@ export default class AuthService {
     rawPassword: string,
     registrationToken: string,
     givenName: string,
+    timezone: string,
   ) {
     const storedEmail = await this.redis.getdel(
       `registration-token:${registrationToken}`,
@@ -95,7 +96,7 @@ export default class AuthService {
 
     const result = await this.db
       .insert(users)
-      .values({ email, password: hashedPassword, givenName })
+      .values({ email, password: hashedPassword, givenName, timezone })
       .onConflictDoNothing({ target: users.email });
 
     if (result.rowCount === 0)
@@ -140,6 +141,7 @@ export default class AuthService {
           status: true,
           role: true,
           givenName: true,
+          timezone: true,
         },
         where: { id: payload.userId },
       });

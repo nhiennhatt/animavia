@@ -13,6 +13,7 @@ export interface AppUser {
   role: (typeof UserRoleEnum)[keyof typeof UserRoleEnum];
   givenName: string;
   email: string;
+  timezone: string;
 }
 
 export interface AppRequest extends Request {

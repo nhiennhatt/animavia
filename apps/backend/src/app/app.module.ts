@@ -12,6 +12,7 @@ import RedisModule from '../redis/redis.module';
 import UserModule from '../user/user.module';
 import HabitModule from '../habit/habit/habit.module';
 import StatementModule from '../habit/statement/statement.module';
+import HabitLogModule from '../habit/log/habit-log.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import StatementModule from '../habit/statement/statement.module';
     UserModule,
     HabitModule,
     StatementModule,
+    HabitLogModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_PIPE, useClass: ZodValidationPipe }],

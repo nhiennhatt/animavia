@@ -4439,6 +4439,11 @@ date-fns@^4.1.0, date-fns@^4.4.0:
   resolved "https://registry.yarnpkg.com/date-fns/-/date-fns-4.4.0.tgz#806539edf45c616b2b76b5f78b88c56ed3c7e036"
   integrity sha512-+1UMbeh68lH1SegH83CGWwpb6OHHbpSgr3+s5Eww5M4CAgswBpoWS0AjTOfEJ33HiYKz1hdj/KTFprzXHmq/6w==
 
+dayjs@^1.11.23:
+  version "1.11.23"
+  resolved "https://registry.yarnpkg.com/dayjs/-/dayjs-1.11.23.tgz#b0a363506dde5f36cf5075e42ebe8115165a8c79"
+  integrity sha512-QDTCU0M0MxR3hQfnlDJfwekQiaanm1ubOD231u73WBckQ/fsamwRLiE2GBz6D3a/xF1NgfiDLJjXBa1hYOYTtQ==
+
 debounce-fn@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/debounce-fn/-/debounce-fn-4.0.0.tgz#ed76d206d8a50e60de0dd66d494d82835ffe61c7"
@@ -9052,6 +9057,11 @@ yoctocolors@^2.1.1:
   version "2.2.0"
   resolved "https://registry.yarnpkg.com/yoctocolors/-/yoctocolors-2.2.0.tgz#c4b68ee477f3982c33e4de24a5aa4a354be506d3"
   integrity sha512-xYqdZFUK/VYazNl/oCDYN+3WloWQwMfZxBoiNt6qNyk+xfOdi598muWE42rNZFp1kNOiqW936q5RhUdnpqElSg==
+
+zod-timezone-validation@^2.0.0:
+  version "2.0.0"
+  resolved "https://registry.yarnpkg.com/zod-timezone-validation/-/zod-timezone-validation-2.0.0.tgz#a9d3ce0cdc11e29509bb4e0eb455daef4ebaca15"
+  integrity sha512-NPBEgcjLx3bJw5hPKvXw6Yq0XLMbaGNpmXFsSZ6CVr5141yRbmgeZKdcMbaeexRItTkwIIaqVs/wXOcV946DEA==
 
 zod-to-json-schema@^3.24.6, zod-to-json-schema@^3.25.1:
   version "3.25.2"

@@ -1,5 +1,8 @@
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
+import { createTimezoneSchemas } from 'zod-timezone-validation';
+
+const { CoercedCanonicalTimezoneSchema } = createTimezoneSchemas();
 
 export const sendRegistrationOtpValidation = z.object({
   email: z.email(),
@@ -23,6 +26,9 @@ export const saveUserValidation = z.object({
   password: z.string().regex(/^(?=.*[A-Z])(?=.*\d)(?=.*[^a-zA-Z0-9]).{9,}$/),
   registrationToken: z.uuid(),
   givenName: z.string().min(3).max(75),
+  timezone: CoercedCanonicalTimezoneSchema.default(() =>
+    CoercedCanonicalTimezoneSchema.parse('Asia/Ho_Chi_Minh'),
+  ),
 });
 
 export class SaveUserPayload extends createZodDto(saveUserValidation) {}
