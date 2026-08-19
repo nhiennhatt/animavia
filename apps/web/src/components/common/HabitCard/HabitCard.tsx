@@ -19,7 +19,7 @@ export function HabitCard({
     <div className="border border-neutral-100 shadow-sm px-4 py-4 rounded-md flex flex-col justify-between gap-y-7">
       <div>
         <div className="flex">
-          <h3 className="flex-1">{habit.name}</h3>
+          <h3 className="flex-1 max-md:text-xl">{habit.name}</h3>
           <div>
             <HabitCardDropdownMenu
               onDelete={() => onDelete(habit.id, habit.name)}
@@ -49,7 +49,7 @@ export function HabitCard({
         <div className="flex flex-col gap-y-1">
           {habit.objective && <p className="text-sm">{habit.objective}</p>}
           {habit.statement && (
-            <div className="border-s-4 border-s-secondary/50 ps-4 py-1 text-secondary">
+            <div className="border-s-2 md:border-s-4 border-s-secondary/50 ps-2 md:ps-4 py-1 text-secondary">
               <p className="italic">
                 &ldquo;{habit.statement}&ldquo;{" "}
                 {habit.source && <span>&ndash; {habit.source}</span>}

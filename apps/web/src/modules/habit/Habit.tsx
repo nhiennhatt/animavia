@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { refreshableQuery } from "@/lib/refreshable-query";
 import { deleteHabit, getHabits } from "@/services/habit.service";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Plus } from "lucide-react";
+import { Divide, Plus } from "lucide-react";
 import Link from "next/link";
 import { Fragment, useState } from "react";
 import z from "zod";
@@ -57,18 +57,18 @@ export function Habit() {
 
   return (
     <Fragment>
-      <div className="flex flex-col items-center w-full">
+      <div className="flex flex-col items-center w-full px-2 md:px-4">
         <div className="w-full max-w-4xl space-y-16">
-          <div className="flex gap-x-4 items-end">
+          <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="space-y-3">
-              <h1 className="text-primary">Thói quen hằng ngày</h1>
+              <h1 className="text-primary max-md:text-3xl">Thói quen hằng ngày</h1>
               <p>
                 Nuôi dưỡng sự bình yên qua từng nhịp điệu dịu dàng mỗi ngày. Hãy
                 nhẹ nhàng ghi lại những thói quen nhỏ và cùng cảm nhận sự trưởng
                 thành nơi tâm hồn bạn.
               </p>
             </div>
-            <div>
+            <div className="self-center">
               <Button className="px-4 py-5 rounded-lg" asChild>
                 <Link href="/habit/create">
                   <Plus />
@@ -78,7 +78,7 @@ export function Habit() {
             </div>
           </div>
           <div>
-            <div className="grid grid-cols-2 gap-x-9 gap-y-16">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-16">
               {!isLoading &&
                 habits?.data &&
                 habits.data.map((h) => (
@@ -92,6 +92,13 @@ export function Habit() {
                   />
                 ))}
             </div>
+            {!isLoading && (!habits?.data || habits.data.length <= 0) && (
+              <div>
+                <p className="text-center">
+                  Chưa có thói quen nào cần theo dõi. Hãy tạo thói quen mới.
+                </p>
+              </div>
+            )}
           </div>
         </div>
       </div>

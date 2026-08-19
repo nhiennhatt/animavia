@@ -28,7 +28,7 @@ export function StepTwo() {
       {error.domain && (
         <div className="text-destructive">{error.domain[0]}</div>
       )}
-      <div className="grid grid-cols-3 gap-4 my-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 gap-4 my-3">
         {lifeDomainList.map((d) => (
           <button
             key={d.value}

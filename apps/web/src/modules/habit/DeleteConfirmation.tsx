@@ -26,7 +26,9 @@ export function DeleteConfirmationDialog({
     >
       <DialogContent>
         <DialogTitle className="text-xl">Xác nhận xóa</DialogTitle>
-        <DialogDescription>Bạn có thực sự muốn xoá "{name}"?</DialogDescription>
+        <DialogDescription>
+          Bạn có thực sự muốn xoá <span className="font-bold">"{name}"</span>?
+        </DialogDescription>
         <DialogFooter>
           <Button onClick={onClose} variant="outline">
             Huỷ

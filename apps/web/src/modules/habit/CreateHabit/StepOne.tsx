@@ -40,7 +40,7 @@ export function StepOne() {
         <p className="text-base font-medium">Khuynh hướng: *</p>
         <div
           className={cn(
-            "flex gap-x-3",
+            "flex flex-col md:flex-row gap-3",
             "[&_button]:transition-colors",
             "[&_button]:py-5 [&_button]:border [&_button]:border-accent [&_button]:hover:bg-accent [&_button]:cursor-pointer [&_button]:flex [&_button]:flex-col [&_button]:flex-1 [&_button]:rounded-md [&_button]:items-center",
             "[&_button]:data-active:bg-primary [&_button]:data-active:text-primary-foreground [&_button]:data-active:hover:bg-primary/80",
