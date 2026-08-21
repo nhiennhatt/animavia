@@ -18,3 +18,11 @@ export interface Statement {
   source: string | null;
   habitId: string;
 }
+
+export interface HabitLog {
+  id: string;
+  loggedAt: Date;
+  forDate: number;
+  thought: string | null;
+  habitId: string;
+}

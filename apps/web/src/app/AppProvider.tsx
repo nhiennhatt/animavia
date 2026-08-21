@@ -18,10 +18,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     {
       queryKey: ["authenticatedUser"],
       queryFn: async () => {
-        const res = await refreshableQuery({
-          callback: getAuthenticatedUserInform,
-          hasParams: false,
-        });
+        const res = await refreshableQuery(getAuthenticatedUserInform);
         if (!res.success) return null;
         return res.data;
       },

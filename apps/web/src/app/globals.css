@@ -68,7 +68,7 @@
 
   /* Typography */
   --font-sans: var(--font-primary), sans-serif;
-  --font-serif: "Cascadia Mono", serif;
+  --font-serif: var(--font-heading), serif;
 
   /* Spacing */
   --spacing-unit: 8px;
@@ -158,7 +158,7 @@
   --radius-full: 100%;
 
   --font-heading: var(--font-andada-pro);
-  --font-mono: var(--font-cascadia-Mono);
+  --font-mono: var(--font-jetbrains-mono);
   --font-primary: var(--font-exo-2);
 
   --primary-container: #5a7d5f;

@@ -30,9 +30,17 @@ export interface SteppedCreateHabitSchema extends z.infer<
 > {}
 
 export const getHabitsSchema = z.object({
-  page: z.int().min(1).max(10).optional().default(1),
-  size: z.int().min(1).max(10).optional().default(5),
-  withRandomQuote: z.boolean().optional().default(false),
+  page: z.int().min(1).max(10).default(1).optional(),
+  size: z.int().min(1).max(10).default(5).optional(),
+  withRandomQuote: z.boolean().default(false).optional(),
 });
 
 export interface GetHabitsSchema extends z.infer<typeof getHabitsSchema> {}
+
+export const logHabitSchema = z.object({
+  habitId: z.uuid(),
+  date: z.int32().positive(),
+  thought: z.string().max(200).optional(),
+});
+
+export interface LogHabitSchema extends z.infer<typeof logHabitSchema> {}

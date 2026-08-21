@@ -2,13 +2,15 @@
 
 import { protectedHttpClient } from "@/lib/http-client";
 import { ApiResponse, AppServerResponse } from "@/types/app";
-import { Habit, Statement } from "@/types/entities";
+import { GetHabitsDto } from "@/types/dto/habit.dto";
+import { Habit, HabitLog, Statement } from "@/types/entities";
 import {
   createHabitStatementSchema,
   CreateHabitStatementSchema,
   createHabitSchema,
   CreateHabitSchema,
   GetHabitsSchema,
+  logHabitSchema,
 } from "@/validations/habit.validation";
 import z from "zod";
 
@@ -46,17 +48,13 @@ export async function createHabit(
 }
 
 export async function getHabits(
-  params: GetHabitsSchema = { page: 1, size: 5, withRandomQuote: true },
-): Promise<
-  AppServerResponse<(Habit & { statement?: string; source?: string })[]>
-> {
+  params: GetHabitsSchema = {},
+): Promise<AppServerResponse<GetHabitsDto>> {
   const apiResponse = await protectedHttpClient("/habit", {
     params,
   });
 
-  const response: ApiResponse<
-    (Habit & { statement?: string; source?: string })[]
-  > = apiResponse.data;
+  const response: ApiResponse<GetHabitsDto> = apiResponse.data;
 
   if (response.error)
     return {
@@ -137,5 +135,73 @@ export async function addHabitStatement(
     success: true,
     code: "Success",
     data: createReponse.data,
+  };
+}
+
+export async function getHabitLogs(
+  id: string,
+): Promise<AppServerResponse<HabitLog[]>> {
+  const validation = await z.uuid().safeParseAsync(id);
+
+  if (!validation.success)
+    return {
+      success: false,
+      code: "VALIDATION_FAILED",
+      error: z.flattenError(validation.error),
+    };
+
+  const getResult = await protectedHttpClient.get("/habit-log", {
+    params: {
+      habit_id: id,
+    },
+  });
+
+  const data: ApiResponse<HabitLog[]> = getResult.data;
+
+  if (data.error)
+    return {
+      success: false,
+      error: data.error,
+      code: data.code,
+    };
+
+  return { success: true, data: data.data, code: "SUCESS" };
+}
+
+export async function logHabit(
+  id: string,
+  date: number,
+  thought?: string,
+): Promise<AppServerResponse<void>> {
+  const validation = await logHabitSchema.safeParseAsync({
+    habitId: id,
+    date,
+    thought,
+  });
+
+  if (!validation.success)
+    return {
+      success: false,
+      error: z.flattenError(validation.error),
+      code: "VALIDATION_FAILED",
+    };
+
+  const res: ApiResponse<void> = await protectedHttpClient.post(
+    "/habit-log",
+    validation.data,
+  );
+
+  if (res.error) {
+    return {
+      success: false,
+      error: res.error,
+      code: res.code,
+    };
+  }
+
+  return {
+    success: true,
+    code: "SUCCESS",
+    data: undefined,
   };
 }

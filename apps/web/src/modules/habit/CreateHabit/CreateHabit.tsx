@@ -41,25 +41,18 @@ export function CreateHabit() {
 
   const { mutate: handleCreateHabit, isPending } = useMutation({
     mutationFn: async (body: SteppedCreateHabitSchema) => {
-      const creationResult = await refreshableQuery({
-        hasParams: true,
-        params: body,
-        ValidationSchema: createHabitSchema,
-        callback: createHabit,
-      });
+      const creationResult = await refreshableQuery(() => createHabit(body));
 
       if (!creationResult.success) throw creationResult.error;
 
-      if (body.statement && body.statement.statement) {
-        const statementCreationResult = await refreshableQuery({
-          hasParams: true,
-          ValidationSchema: createHabitStatementSchema,
-          params: {
+      if (!!body.statement && !!body.statement?.statement) {
+        const statementCreationResult = await refreshableQuery(() =>
+          addHabitStatement({
             habitId: creationResult.data.id,
-            ...body.statement,
-          },
-          callback: addHabitStatement,
-        });
+            statement: body.statement?.statement || "",
+            source: body.statement?.source,
+          }),
+        );
       }
 
       return creationResult.data.id;
@@ -144,7 +137,9 @@ export function CreateHabit() {
           </Link>
         </Button>
         <div>
-          <h1 className="text-center text-primary max-md:text-3xl">Gieo mầm thói quen</h1>
+          <h1 className="text-center text-primary max-md:text-3xl">
+            Gieo mầm thói quen
+          </h1>
           <p className="text-center text-lg">
             Một bước nhỏ trên hành trình lớn lên.
           </p>

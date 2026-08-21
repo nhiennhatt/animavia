@@ -1,22 +1,62 @@
-import { Habit } from "@/types/entities";
-import { Button } from "../../ui/button";
-import { WeeklyCalendar } from "../WeeklyCalendar/WeeklyCalendar";
-import { lifeDomainList } from "@/config/life-domain-list";
 import { Fragment } from "react/jsx-runtime";
 import { EllipsisVertical } from "lucide-react";
+import { motion } from "motion/react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+
+import { Habit } from "@/types/entities";
+import { refreshableQuery } from "@/lib/refreshable-query";
+import { lifeDomainList } from "@/config/life-domain-list";
+import { getHabitLogs, logHabit } from "@/services/habit.service";
+
+import { Button } from "../../ui/button";
+import { WeeklyCalendar } from "../WeeklyCalendar/WeeklyCalendar";
 import { HabitCardDropdownMenu } from "./HabitCardDropdownMenu";
 
 export function HabitCard({
   habit,
-  loggedDates = [],
   onDelete = () => {},
 }: {
-  habit: Habit & { statement?: string; source?: string };
-  loggedDates?: Date[];
+  habit: Habit & { statement: string | null; source: string | null };
   onDelete?: (id: string, name: string) => void;
 }) {
+  const today = new Date().setHours(0, 0, 0, 0) / 1000;
+  const queryClient = useQueryClient();
+
+  const { data: logs = [] } = useQuery({
+    queryKey: ["getHabitLogs", habit.id],
+    queryFn: async () => {
+      const query = await refreshableQuery(() => getHabitLogs(habit.id));
+
+      if (!query.success) return [];
+
+      return query.data.map((h) => h.forDate);
+    },
+  });
+
+  const checkedToday = logs.some((v) => v >= today && v < today + 86400);
+
+  const { mutate: handleLog } = useMutation({
+    mutationFn: async (params: { id: string; date: number }) => {
+      await refreshableQuery(() => logHabit(params.id, params.date));
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["getHabitLogs", habit.id] });
+    },
+  });
+
   return (
-    <div className="border border-neutral-100 shadow-sm px-4 py-4 rounded-md flex flex-col justify-between gap-y-7">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.8, y: 20 }}
+      animate={{ opacity: 1, scale: 1, y: 0 }}
+      transition={{
+        type: "spring",
+        stiffness: 300,
+        damping: 25,
+        opacity: { duration: 0.5 },
+      }}
+      key={habit.id}
+      className="border border-neutral-100 shadow-sm px-4 py-4 rounded-md flex flex-col justify-between gap-y-7"
+    >
       <div>
         <div className="flex">
           <h3 className="flex-1 max-md:text-xl">{habit.name}</h3>
@@ -34,7 +74,7 @@ export function HabitCard({
             </HabitCardDropdownMenu>
           </div>
         </div>
-        <div className="flex gap-1 text-xs">
+        <div className="flex gap-1 mt-0.5 text-xs">
           {habit.domain.slice(0, 3).map((d, i) => (
             <Fragment key={d}>
               <span className="flex gap-1 items-center justify-center">
@@ -59,11 +99,28 @@ export function HabitCard({
         </div>
       )}
       <div className="space-y-7">
-        <WeeklyCalendar loggedDates={loggedDates} />
+        <WeeklyCalendar
+          onCheckin={(date) => {
+            handleLog({ id: habit.id, date });
+          }}
+          loggedDates={logs}
+        />
         <div className="flex justify-end">
-          <Button variant="outline">Ghi nhận hôm nay</Button>
+          <Button
+            onClick={() => {
+              if (!checkedToday)
+                handleLog({
+                  id: habit.id,
+                  date: Math.trunc(new Date().getTime() / 1000),
+                });
+            }}
+            disabled={checkedToday}
+            variant="outline"
+          >
+            Ghi nhận hôm nay
+          </Button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }

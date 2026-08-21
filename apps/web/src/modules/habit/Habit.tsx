@@ -1,38 +1,42 @@
 "use client";
 
+import { Fragment, useState } from "react";
+import Link from "next/link";
+import { Plus } from "lucide-react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AnimatePresence } from "motion/react";
+
 import { HabitCard } from "@/components/common/HabitCard/HabitCard";
 import { Button } from "@/components/ui/button";
 import { refreshableQuery } from "@/lib/refreshable-query";
 import { deleteHabit, getHabits } from "@/services/habit.service";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Divide, Plus } from "lucide-react";
-import Link from "next/link";
-import { Fragment, useState } from "react";
-import z from "zod";
 import { DeleteConfirmationDialog } from "./DeleteConfirmation";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+} from "@/components/ui/pagination";
 
 export function Habit() {
+  const size = 4;
   const queryClient = useQueryClient();
   const [deletingHabit, setDeletingHabit] = useState<{
     id: string;
     name: string;
   } | null>(null);
+  const [page, setPage] = useState<number>(1);
 
-  const { data: habits, isLoading } = useQuery({
-    queryKey: ["getOwnedHabits"],
+  const { data: habits = { data: [], total: 0 }, isLoading } = useQuery({
+    queryKey: ["getOwnedHabits", size, page],
     queryFn: async () => {
-      return await refreshableQuery({ hasParams: false, callback: getHabits });
+      return (await refreshableQuery(() => getHabits({ page, size }))).data;
     },
   });
 
   const { mutate: handleDeleteHabit, isPending: isDeleting } = useMutation({
     mutationFn: async (id: string) => {
-      await refreshableQuery({
-        hasParams: true,
-        callback: deleteHabit,
-        ValidationSchema: z.object({ id: z.uuid() }),
-        params: { id },
-      });
+      await refreshableQuery(() => deleteHabit({ id }));
     },
     onSuccess: () => {
       queryClient.invalidateQueries({
@@ -42,26 +46,15 @@ export function Habit() {
     },
   });
 
-  const exampleDates = [
-    new Date(),
-    new Date(),
-    new Date(),
-    new Date(),
-    new Date(),
-  ];
-
-  exampleDates[0].setDate(11);
-  exampleDates[1].setDate(12);
-  exampleDates[2].setDate(14);
-  exampleDates[3].setDate(3);
-
   return (
     <Fragment>
-      <div className="flex flex-col items-center w-full px-2 md:px-4">
+      <div className="flex flex-col items-center w-full px-2 md:px-4 py-10">
         <div className="w-full max-w-4xl space-y-16">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="space-y-3">
-              <h1 className="text-primary max-md:text-3xl">Thói quen hằng ngày</h1>
+              <h1 className="text-primary max-md:text-3xl">
+                Thói quen hằng ngày
+              </h1>
               <p>
                 Nuôi dưỡng sự bình yên qua từng nhịp điệu dịu dàng mỗi ngày. Hãy
                 nhẹ nhàng ghi lại những thói quen nhỏ và cùng cảm nhận sự trưởng
@@ -79,19 +72,42 @@ export function Habit() {
           </div>
           <div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-16">
-              {!isLoading &&
-                habits?.data &&
-                habits.data.map((h) => (
-                  <HabitCard
-                    key={h.id}
-                    habit={h}
-                    loggedDates={exampleDates}
-                    onDelete={(id, name) => {
-                      setDeletingHabit({ id, name });
-                    }}
-                  />
-                ))}
+              <AnimatePresence>
+                {!isLoading &&
+                  habits?.data &&
+                  habits.data.map((h) => (
+                    <HabitCard
+                      key={h.id}
+                      habit={h}
+                      onDelete={(id, name) => {
+                        setDeletingHabit({ id, name });
+                      }}
+                    />
+                  ))}
+              </AnimatePresence>
             </div>
+            {habits?.total && habits.total > size ? (
+              <div className="my-10">
+                <Pagination>
+                  <PaginationContent>
+                    {[...Array(Math.ceil(habits.total / size)).keys()].map(
+                      (_, i) => (
+                        <PaginationItem key={i}>
+                          <PaginationLink
+                            onClick={() => setPage(i + 1)}
+                            isActive={i === page - 1}
+                          >
+                            {i + 1}
+                          </PaginationLink>
+                        </PaginationItem>
+                      ),
+                    )}
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            ) : (
+              <></>
+            )}
             {!isLoading && (!habits?.data || habits.data.length <= 0) && (
               <div>
                 <p className="text-center">
