@@ -12,7 +12,7 @@ dayjs.extend(utc);
 
 import { habitLogs, habits, type AppPgDatabaseType } from '../../db/db.schema';
 import { AppUser } from '../../utils/types';
-import { and, between, eq, sql } from 'drizzle-orm';
+import { and, between, eq, getColumns, sql } from 'drizzle-orm';
 
 @Injectable()
 export default class HabitLogService {
@@ -117,7 +117,10 @@ export default class HabitLogService {
         : startOfTime.clone().add(1, 'M');
 
     return await this.db
-      .select()
+      .select({
+        ...getColumns(habitLogs),
+        forDate: sql<number>`EXTRACT(EPOCH FROM ${habitLogs.forDate})::INTEGER`,
+      })
       .from(habitLogs)
       .where(
         and(

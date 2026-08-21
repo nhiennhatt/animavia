@@ -80,25 +80,36 @@ export default class HabitService {
       pinned?: boolean;
       includeQuote?: boolean;
     },
-  ): Promise<
-    (typeof habits.$inferSelect & {
+  ): Promise<{
+    data: (typeof habits.$inferSelect & {
       [K in keyof typeof habitStatements.$inferSelect]?:
         (typeof habitStatements.$inferSelect)[K] | null;
-    })[]
-  > {
+    })[];
+    total: number;
+  }> {
     const condition = [eq(habits.ownerId, userId)];
 
     if (pinned !== undefined) condition.push(eq(habits.pinned, pinned));
 
     if (htype) condition.push(eq(habits.htype, htype));
 
-    const habitQuery = this.db
-      .select()
-      .from(habits)
-      .where(and(...condition))
-      .orderBy(desc(habits.createdAt))
+    const depaginateHabitQuery = () =>
+      this.db
+        .select()
+        .from(habits)
+        .where(and(...condition))
+        .orderBy(desc(habits.createdAt));
+
+    const habitQuery = depaginateHabitQuery()
       .offset((page - 1) * size)
       .limit(Math.min(size, 10));
+
+    let result:
+      | (typeof habits.$inferSelect & {
+          [K in keyof typeof habitStatements.$inferSelect]?:
+            (typeof habitStatements.$inferSelect)[K] | null;
+        })[]
+      | null = null;
 
     if (includeQuote) {
       const habitQueryAlias = habitQuery.as('habits');
@@ -113,7 +124,7 @@ export default class HabitService {
         .orderBy(sql`RANDOM()`)
         .as('statement');
 
-      return await this.db
+      result = await this.db
         .select({
           ...getColumns(habitQueryAlias),
           statement: statementQueryAlias.statement,
@@ -123,9 +134,17 @@ export default class HabitService {
         .leftJoinLateral(statementQueryAlias, sql`true`);
     }
 
-    const result = await habitQuery;
+    const depaginateHabitQueryAlias = depaginateHabitQuery().as('habits');
+    const totalResult = await this.db
+      .select({
+        amount: count(depaginateHabitQueryAlias.id),
+      })
+      .from(depaginateHabitQueryAlias);
+    const total = totalResult[0].amount;
 
-    return result;
+    if (result === null) result = await habitQuery;
+
+    return { data: result, total: total };
   }
 
   async getHabit(id: string, userId: string) {

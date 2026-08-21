@@ -9,6 +9,7 @@
     "turbo": "^2.10.10"
   },
   "dependencies": {
+    "dayjs": "^1.11.23",
     "zod": "^4.4.3",
     "zod-timezone-validation": "^2.0.0"
   },
