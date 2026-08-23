@@ -11,7 +11,7 @@ export class AppService {
     const result = await loadTemplate('registration-otp', { otp });
     await this.mailer.sendMail({
       to: email,
-      subject: 'PNEUMA | Registration OTP',
+      subject: 'Animavia | Registration OTP',
       html: result,
     });
   }

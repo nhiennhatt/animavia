@@ -53,23 +53,31 @@
         text-align: center;
         color: #78a3ad;
       }
+
+      .otp > div {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+      }
     </style>
   </head>
 
   <body>
     <div class='mail'>
       <div class='main'>
-        <h1 class='welcome'>Welcome to Pneuma</h1>
-        <p class='paragraph'>To complete your registration, please use the
-          following one-time password (OTP) to verify your account.</p>
-        <p class='paragraph'>This code is valid for 10 minutes.</p>
-        <div>
-          <div class='otp'>{{otp}}</div>
+        <div class='welcome'>
+          <p style='font-size: 1.5rem;'>Chào mừng đến với</p>
+          <h1>Animavia</h1>
         </div>
-        <p class='paragraph'>If you didn't request this code, please ignore this
-          email.</p>
+        <p class='paragraph'>Để hoàn thành quá trình đăng ký hãy sử dụng mật
+          khẩu một lần (OTP) được cấp để xấc nhận tài khoản của bạn.</p>
+        <p class='paragraph'>OTP có hiệu lực trong 10 phút.</p>
+        <div>
+          <div class='otp'><div>{{otp}}</div></div>
+        </div>
+        <p class='paragraph'>Nếu bạn không yêu cầu mã OTP để đăng ký tài khoản,
+          vui lòng bỏ qua email này.</p>
       </div>
-      <div class='slogan'>Your daily breath of peace.</div>
+      <div class='slogan'>Dẫn lối tâm hồn.</div>
     </div>
   </body>
 
