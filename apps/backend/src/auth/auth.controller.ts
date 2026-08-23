@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Post } from '@nestjs/common';
 import AuthService from './auth.service';
 import {
+  ExchangeGoogleTokenSchema,
   LogoutValidationSchema,
   RefreshTokenValidation,
   SaveUserPayload,
@@ -57,5 +58,10 @@ export default class AuthController {
   @Delete('/logout')
   async logout(@Body() body: LogoutValidationSchema) {
     await this.authService.logout(body.refresh);
+  }
+
+  @Post('/google')
+  async exchangeGoogleToken(@Body() body: ExchangeGoogleTokenSchema) {
+    return this.authService.exchangeGoogleToken(body.code, body.timezone);
   }
 }

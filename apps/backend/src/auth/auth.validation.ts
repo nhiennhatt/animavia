@@ -55,3 +55,14 @@ export const logoutValidationSchema = z.object({
 export class LogoutValidationSchema extends createZodDto(
   logoutValidationSchema,
 ) {}
+
+export const exchangeGoogleTokenSchema = z.object({
+  code: z.string(),
+  timezone: CoercedCanonicalTimezoneSchema.default(() =>
+    CoercedCanonicalTimezoneSchema.parse('Asia/Ho_Chi_Minh'),
+  ),
+});
+
+export class ExchangeGoogleTokenSchema extends createZodDto(
+  exchangeGoogleTokenSchema,
+) {}

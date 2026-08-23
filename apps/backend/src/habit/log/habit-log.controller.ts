@@ -9,7 +9,10 @@ import {
 import { Auth, User } from '../../utils/common/decorators';
 import HabitLogService from './habit-log.service';
 import { type AppUser } from '../../utils/types';
-import { AddHabitLogSchema } from './habit-log.validation';
+import {
+  AddHabitLogSchema,
+  GetHabitLogParamsSchema,
+} from './habit-log.validation';
 
 @Controller('/habit-log')
 @Auth()
@@ -29,13 +32,8 @@ export default class HabitLogController {
   @Get('')
   async getLog(
     @User() user: AppUser,
-    @Query('habit_id', new ParseUUIDPipe()) habitId: string,
+    @Query() { habit_id, period, time }: GetHabitLogParamsSchema,
   ) {
-    return await this.habitLogService.getLogs(
-      user,
-      habitId,
-      'w',
-      Math.trunc(new Date().getTime() / 1000),
-    );
+    return await this.habitLogService.getLogs(user, habit_id, period, time);
   }
 }

@@ -8,3 +8,17 @@ export const addHabitLogSchema = z.object({
 });
 
 export class AddHabitLogSchema extends createZodDto(addHabitLogSchema) {}
+
+export const getHabitLogParamsSchema = z.object({
+  habit_id: z.uuid(),
+  period: z.enum(['w', 'm']).optional().default('w'),
+  time: z
+    .int32()
+    .positive()
+    .optional()
+    .default(() => Math.trunc(new Date().getTime() / 1000)),
+});
+
+export class GetHabitLogParamsSchema extends createZodDto(
+  getHabitLogParamsSchema,
+) {}

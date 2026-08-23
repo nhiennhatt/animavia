@@ -109,25 +109,7 @@ export default class AuthService {
     const result = await argon2.verify(user.password, plainPassword);
     if (!result) throw new UnauthorizedException();
 
-    const jti = randomUUID();
-
-    const accessToken = this.jwtService.signAccessToken(
-      {
-        userId: user.id,
-        status: user.status,
-      },
-      jti,
-    );
-
-    const refreshToken = this.jwtService.signRefreshToken(
-      { userId: user.id },
-      jti,
-    );
-
-    return {
-      accessToken,
-      refreshToken,
-    };
+    return this.assignTokenPair({ id: user.id, status: user.status });
   }
 
   async validateAccessToken(token: string) {
@@ -177,24 +159,7 @@ export default class AuthService {
 
       if (!user) throw new ForbiddenException();
 
-      const jti = randomUUID();
-
-      const accessToken = this.jwtService.signAccessToken(
-        {
-          userId: user.id,
-          status: user.status,
-        },
-        jti,
-      );
-
-      const refreshToken = this.jwtService.signRefreshToken(
-        {
-          userId: user.id,
-        },
-        jti,
-      );
-
-      return { accessToken, refreshToken };
+      return this.assignTokenPair({ id: user.id, status: user.status });
     } catch (error) {
       if (
         error instanceof SyntaxError ||
@@ -234,7 +199,85 @@ export default class AuthService {
       ) {
         throw new UnauthorizedException();
       }
-      this.logger.log('');
     }
+  }
+
+  async exchangeGoogleToken(code: string, timezone: string) {
+    const tokenResponse = await fetch('https://oauth2.googleapis.com/token', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: new URLSearchParams({
+        code,
+        client_id: process.env.GOOGLE_CLIENT_ID || '',
+        client_secret: process.env.GOOGLE_CLIENT_SECRET || '',
+        redirect_uri: process.env.GOOGLE_CLIENT_REDIRECT || '',
+        grant_type: 'authorization_code',
+      }),
+    });
+
+    const tokenData = (await tokenResponse.json()) as
+      | { error: { error_description: string }; access_token: undefined }
+      | { access_token: string; error: undefined };
+
+    if (tokenData.error) throw new UnauthorizedException();
+
+    const userResponse = await fetch(
+      'https://www.googleapis.com/oauth2/v2/userinfo',
+      {
+        headers: { Authorization: `Bearer ${tokenData.access_token}` },
+      },
+    );
+
+    const userData = (await userResponse.json()) as {
+      email: string;
+      given_name: string;
+    };
+
+    const userInstance = await this.db
+      .insert(users)
+      .values({
+        email: userData.email,
+        givenName: userData.given_name,
+        password: await argon2.hash(randomUUID(), {
+          type: argon2.argon2id,
+          memoryCost: 2 ** 17,
+          parallelism: 2,
+          timeCost: 4,
+        }),
+      })
+      .onConflictDoUpdate({
+        target: users.email,
+        set: {
+          givenName: userData.given_name || '',
+        },
+      })
+      .returning();
+
+    return this.assignTokenPair({
+      id: userInstance[0].id,
+      status: userInstance[0].id,
+    });
+  }
+
+  assignTokenPair(payload: { id: string; status: string }) {
+    const jti = randomUUID();
+
+    const accessToken = this.jwtService.signAccessToken(
+      {
+        userId: payload.id,
+        status: payload.status,
+      },
+      jti,
+    );
+
+    const refreshToken = this.jwtService.signRefreshToken(
+      { userId: payload.id },
+      jti,
+    );
+
+    return {
+      accessToken,
+      refreshToken,
+    };
   }
 }
