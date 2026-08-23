@@ -7,10 +7,13 @@ import { BaseUser } from "@/types/user";
 import {
   LoginBodySchema,
   ILoginBodySchema,
+  exchangeGoogleTokenSchema,
 } from "@/validations/user.validation";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import z from "zod";
 import { httpClient, protectedHttpClient } from "@/lib/http-client";
+import { redirect } from "next/navigation";
+import { validateSchemaAsync } from "@/lib/validateSchema";
 
 export const login = async (
   body: ILoginBodySchema,
@@ -136,4 +139,64 @@ export const logout = async () => {
     cookieStore.delete("token");
     cookieStore.delete("refresh");
   }
+};
+
+export const redirectToGoogleOAuth = async () => {
+  const options = {
+    redirect_uri: `${process.env.ORIGIN}/oauth/callback`,
+    client_id: process.env.GOOGLE_CLIENT_ID || "",
+    access_type: "offline",
+    response_type: "code",
+    prompt: "consent",
+    scope: process.env.GOOGLE_SCOPES || "",
+  };
+
+  const urlParams = new URLSearchParams(options);
+
+  redirect(`https://accounts.google.com/o/oauth2/v2/auth?${urlParams}`);
+};
+
+export const exchangeGoogleToken = async (
+  code: string,
+  timezone: string,
+): Promise<AppServerResponse<void>> => {
+  const validation = await validateSchemaAsync(
+    { code, timezone },
+    exchangeGoogleTokenSchema,
+  );
+
+  if (!validation.success)
+    return {
+      success: false,
+      code: "VALIDATION_FAILED",
+      error: validation.error,
+    };
+
+  console.log(validation.data);
+
+  const req = await httpClient("/auth/google", {
+    data: {
+      code: validation.data.code,
+      timezone: validation.data.timezone,
+    },
+    method: "POST",
+  });
+
+  const data: ApiResponse<GetTokenPairDto> = req.data;
+
+  if (data.error)
+    return {
+      success: false,
+      code: data.code,
+      error: data.error,
+    };
+
+  const { accessToken, refreshToken } = data.data;
+
+  const cookieStore = await cookies();
+
+  cookieStore.set("token", accessToken);
+  cookieStore.set("refresh", refreshToken);
+
+  return { success: true, data: undefined, code: "SUCCESS" };
 };

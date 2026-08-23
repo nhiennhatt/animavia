@@ -21,3 +21,4 @@ export * from "./drinking";
 export * from "./community";
 export * from "./intellectual";
 export * from "./plant";
+export * from "./google";

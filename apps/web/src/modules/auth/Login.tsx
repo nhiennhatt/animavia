@@ -17,7 +17,9 @@ import {
   InputGroupInput,
 } from "@/components/ui/input-group";
 import { LoginBodySchema } from "@/validations/user.validation";
-import { login } from "@/services/user.service";
+import { login, redirectToGoogleOAuth } from "@/services/user.service";
+import { Marker, MarkerContent } from "@/components/ui/marker";
+import { GoogleIcon } from "@/components/icons";
 
 export function Login() {
   const router = useRouter();
@@ -68,7 +70,7 @@ export function Login() {
   return (
     <div className="max-w-lg w-full mx-auto my-20 space-y-8">
       <h1 className="text-center text-6xl font-bold text-primary text-shadow-sm text-shadow-primary/70">
-        Pneuma
+        Animavia
       </h1>
       <div
         className="p-12 bg-white rounded-lg shadow-lg space-y-8"
@@ -149,6 +151,23 @@ export function Login() {
           Đăng nhập
           <ArrowRight className="size-5" />
         </Button>
+
+        <div>
+          <Marker variant="separator">
+            <MarkerContent>Hoặc đăng nhập bằng</MarkerContent>
+          </Marker>
+
+          <div className="flex justify-center my-2">
+            <Button
+              variant="outline"
+              disabled={isLogging}
+              onClick={() => redirectToGoogleOAuth()}
+              className="rounded-full size-auto! aspect-square"
+            >
+              <GoogleIcon className="size-8" />
+            </Button>
+          </div>
+        </div>
 
         <p className="text-center text-neutral-500">
           Chưa có tài khoản?{" "}

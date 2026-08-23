@@ -9,14 +9,16 @@ import { AnimatePresence } from "motion/react";
 import { HabitCard } from "@/components/common/HabitCard/HabitCard";
 import { Button } from "@/components/ui/button";
 import { refreshableQuery } from "@/lib/refreshable-query";
-import { deleteHabit, getHabits } from "@/services/habit.service";
-import { DeleteConfirmationDialog } from "./DeleteConfirmation";
+import { deleteHabit, getHabits, logHabit } from "@/services/habit.service";
 import {
   Pagination,
   PaginationContent,
   PaginationItem,
   PaginationLink,
 } from "@/components/ui/pagination";
+import { DeleteConfirmationDialog } from "./DeleteConfirmation";
+import { LogHabitDialog } from "./LogHabitDialog";
+import { CompleteEffect } from "./CompleteEffect";
 
 export function Habit() {
   const size = 4;
@@ -25,7 +27,13 @@ export function Habit() {
     id: string;
     name: string;
   } | null>(null);
+  const [loggingHabit, setLoggingHabit] = useState<{
+    id: string;
+    time: number;
+    name: string;
+  } | null>(null);
   const [page, setPage] = useState<number>(1);
+  const [isShowCompleteDialog, setIsShowCompleteDialog] = useState(false);
 
   const { data: habits = { data: [], total: 0 }, isLoading } = useQuery({
     queryKey: ["getOwnedHabits", size, page],
@@ -43,6 +51,19 @@ export function Habit() {
         queryKey: ["getOwnedHabits"],
       });
       setDeletingHabit(null);
+    },
+  });
+
+  const { mutate: handleLog, isPending: isLogging } = useMutation({
+    mutationFn: async (params: { id: string; date: number }) => {
+      await refreshableQuery(() => logHabit(params.id, params.date));
+    },
+    onSuccess: (_, variables) => {
+      setLoggingHabit(null);
+      setIsShowCompleteDialog(true);
+      queryClient.invalidateQueries({
+        queryKey: ["getHabitLogs", variables.id],
+      });
     },
   });
 
@@ -81,6 +102,13 @@ export function Habit() {
                       habit={h}
                       onDelete={(id, name) => {
                         setDeletingHabit({ id, name });
+                      }}
+                      onLog={(id, date, name) => {
+                        setLoggingHabit({
+                          id,
+                          time: date,
+                          name: name,
+                        });
                       }}
                     />
                   ))}
@@ -124,6 +152,17 @@ export function Habit() {
           onConfirm={() => handleDeleteHabit(deletingHabit.id)}
           name={deletingHabit.name}
         />
+      )}
+      {loggingHabit && (
+        <LogHabitDialog
+          isLogging={isLoading}
+          onLog={(id, date, thought) => handleLog({ id, date })}
+          onClose={() => setLoggingHabit(null)}
+          habit={loggingHabit}
+        />
+      )}
+      {isShowCompleteDialog && (
+        <CompleteEffect onClick={() => setIsShowCompleteDialog(false)} />
       )}
     </Fragment>
   );

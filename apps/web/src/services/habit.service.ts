@@ -172,7 +172,7 @@ export async function logHabit(
   id: string,
   date: number,
   thought?: string,
-): Promise<AppServerResponse<void>> {
+): Promise<AppServerResponse<HabitLog>> {
   const validation = await logHabitSchema.safeParseAsync({
     habitId: id,
     date,
@@ -186,7 +186,7 @@ export async function logHabit(
       code: "VALIDATION_FAILED",
     };
 
-  const res: ApiResponse<void> = await protectedHttpClient.post(
+  const res: ApiResponse<HabitLog> = await protectedHttpClient.post(
     "/habit-log",
     validation.data,
   );
@@ -202,6 +202,6 @@ export async function logHabit(
   return {
     success: true,
     code: "SUCCESS",
-    data: undefined,
+    data: res.data,
   };
 }

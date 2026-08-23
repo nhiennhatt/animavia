@@ -34,7 +34,7 @@ export default function AuthLogin({ children }: { children: ReactNode }) {
       </div>
       {children}
       <p className="absolute bottom-0 left-0 right-0 text-center text-sm text-primary/70 mb-2">
-        &copy; 2026 Pneuma Vietnam. All rights reserved.
+        &copy; 2026 Animavia Vietnam. All rights reserved.
       </p>
     </div>
   );

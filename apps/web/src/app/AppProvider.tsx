@@ -14,7 +14,7 @@ import { Toaster } from "sonner";
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const queryClient = new QueryClient();
-  const { data: user, isLoading: isLoadingUser } = useQuery(
+  const { data: user, isLoading: isLoadingUser = true } = useQuery(
     {
       queryKey: ["authenticatedUser"],
       queryFn: async () => {

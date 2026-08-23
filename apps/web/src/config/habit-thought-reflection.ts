@@ -1,0 +1,17 @@
+export const habitThoughtReflections = [
+  "Bạn đang cảm thấy thế nào sau khi dành thời gian cho việc này?",
+  "Cơ thể và tâm trí bạn đang mách bảo điều gì sau khi hoàn thành?",
+  "Điều nhỏ bé nào đã giúp bạn giữ đúng cam kết trong ngày hôm nay?",
+  "Có sự xao nhãng hay rào cản nào mà bạn vừa chiến thắng thành công không?",
+  "Điều gì khiến bạn cảm thấy tự hào nhất về bản thân trong khoảnh khắc này?",
+  "Bạn có nhận ra điều gì thú vị hoặc mới mẻ trong lúc thực hiện thói quen này không?",
+  "Nếu được gửi một lời nhắn khích lệ cho bản thân của ngày mai, bạn sẽ viết gì?",
+  "Có trải nghiệm nào hôm nay bạn muốn giữ lại cho ngày mai không?",
+  "Hôm nay, bạn muốn gửi lời cảm ơn đến bản thân vì nỗ lực nào nhất?",
+  "Có chi tiết nhỏ bé nào trong lúc thực hiện thói quen đã mang lại cho bạn niềm vui?",
+  "Bạn cảm thấy thói quen này đang giúp bạn yêu thương và chăm sóc chính mình tốt hơn như thế nào?",
+  "Có suy nghĩ hay cảm xúc nào bất chợt ghé thăm tâm trí bạn trong quá trình vừa rồi không?",
+  "Bạn có nhận thấy sự thay đổi nào về nhịp thở, cơ thể hay tâm trí trước và sau khi bắt đầu không?",
+  "Qua hành động nhỏ của ngày hôm nay, bạn thấy mình đang bước gần hơn đến phiên bản nào của chính mình?",
+  "Phần nào là dễ dàng nhất, và phần nào vẫn còn đôi chút thử thách đối với bạn trong hôm nay?",
+];

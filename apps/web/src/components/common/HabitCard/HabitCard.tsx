@@ -1,12 +1,12 @@
 import { Fragment } from "react/jsx-runtime";
 import { EllipsisVertical } from "lucide-react";
 import { motion } from "motion/react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { Habit } from "@/types/entities";
 import { refreshableQuery } from "@/lib/refreshable-query";
 import { lifeDomainList } from "@/config/life-domain-list";
-import { getHabitLogs, logHabit } from "@/services/habit.service";
+import { getHabitLogs } from "@/services/habit.service";
 
 import { Button } from "../../ui/button";
 import { WeeklyCalendar } from "../WeeklyCalendar/WeeklyCalendar";
@@ -14,13 +14,14 @@ import { HabitCardDropdownMenu } from "./HabitCardDropdownMenu";
 
 export function HabitCard({
   habit,
-  onDelete = () => {},
+  onDelete,
+  onLog,
 }: {
   habit: Habit & { statement: string | null; source: string | null };
-  onDelete?: (id: string, name: string) => void;
+  onDelete: (id: string, name: string) => void;
+  onLog: (id: string, time: number, name: string) => void;
 }) {
   const today = new Date().setHours(0, 0, 0, 0) / 1000;
-  const queryClient = useQueryClient();
 
   const { data: logs = [] } = useQuery({
     queryKey: ["getHabitLogs", habit.id],
@@ -34,15 +35,6 @@ export function HabitCard({
   });
 
   const checkedToday = logs.some((v) => v >= today && v < today + 86400);
-
-  const { mutate: handleLog } = useMutation({
-    mutationFn: async (params: { id: string; date: number }) => {
-      await refreshableQuery(() => logHabit(params.id, params.date));
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["getHabitLogs", habit.id] });
-    },
-  });
 
   return (
     <motion.div
@@ -101,7 +93,7 @@ export function HabitCard({
       <div className="space-y-7">
         <WeeklyCalendar
           onCheckin={(date) => {
-            handleLog({ id: habit.id, date });
+            onLog(habit.id, date, habit.name);
           }}
           loggedDates={logs}
         />
@@ -109,15 +101,16 @@ export function HabitCard({
           <Button
             onClick={() => {
               if (!checkedToday)
-                handleLog({
-                  id: habit.id,
-                  date: Math.trunc(new Date().getTime() / 1000),
-                });
+                onLog(
+                  habit.id,
+                  Math.trunc(new Date().getTime() / 1000),
+                  habit.name,
+                );
             }}
             disabled={checkedToday}
             variant="outline"
           >
-            Ghi nhận hôm nay
+            Ghi lại hành trình hôm nay
           </Button>
         </div>
       </div>
