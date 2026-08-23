@@ -32,6 +32,7 @@ export function HabitCard({
 
       return query.data.map((h) => h.forDate);
     },
+    refetchOnWindowFocus: false,
   });
 
   const checkedToday = logs.some((v) => v >= today && v < today + 86400);

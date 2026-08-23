@@ -5591,6 +5591,11 @@ hono@^4.11.4:
   resolved "https://registry.yarnpkg.com/hono/-/hono-4.13.1.tgz#d4a606b792954d07a6215d12c01b7cf59da03cbc"
   integrity sha512-kdJoFVv2xmayw6cY09H7AbMJMt8Jn5jdlEdXsP7AGBdF2DIptVlKlOLKXP41yPip4/a3yQPv9gVcJYI8YY04dw==
 
+howler@^2.2.4:
+  version "2.2.4"
+  resolved "https://registry.yarnpkg.com/howler/-/howler-2.2.4.tgz#bd3df4a4f68a0118a51e4bd84a2bfc2e93e6e5a1"
+  integrity sha512-iARIBPgcQrwtEr+tALF+rapJ8qSc+Set2GJQl7xT1MQzWaVkFebdJhR3alVlSiUf5U7nAANKuj3aWpwerocD5w==
+
 html-escaper@^2.0.0:
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/html-escaper/-/html-escaper-2.0.2.tgz#dfd60027da36a36dfcbe236262c00a5822681453"
@@ -8819,6 +8824,13 @@ use-sidecar@^1.1.3:
   dependencies:
     detect-node-es "^1.1.0"
     tslib "^2.0.0"
+
+use-sound@^5.0.0:
+  version "5.0.0"
+  resolved "https://registry.yarnpkg.com/use-sound/-/use-sound-5.0.0.tgz#62894ecf5ac3810c3f105c783bb93b15ad9157a6"
+  integrity sha512-MNHT3FFC5HxNCrgZtrnpIMJI2cw/0D2xismcrtyht8BTuF5FhFhb57xO/jlQr2xJaFrc/0btzRQvGyHQwB7PVA==
+  dependencies:
+    howler "^2.2.4"
 
 use-sync-external-store@^1.6.0:
   version "1.6.0"

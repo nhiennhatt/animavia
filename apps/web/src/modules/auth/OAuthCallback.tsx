@@ -14,8 +14,7 @@ export function OAuthCallback({ code }: { code: string }) {
   const { mutate: handleExchangeCode } = useMutation({
     mutationFn: async (code: string) => {
       const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-      const result = await exchangeGoogleToken(code, timezone);
-      console.log(result);
+      await exchangeGoogleToken(code, timezone);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({

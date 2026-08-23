@@ -22,7 +22,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         if (!res.success) return null;
         return res.data;
       },
-      refetchOnMount: false,
+      refetchOnWindowFocus: false,
     },
     queryClient,
   );

@@ -19,7 +19,6 @@ export async function refreshableQuery<R>(
           });
         }
         const refreshedTokenPairResult = await refreshPromise;
-        console.log(refreshedTokenPairResult);
         if (refreshedTokenPairResult.success) {
           return await callback();
         }

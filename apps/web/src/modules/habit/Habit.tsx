@@ -40,6 +40,7 @@ export function Habit() {
     queryFn: async () => {
       return (await refreshableQuery(() => getHabits({ page, size }))).data;
     },
+    refetchOnWindowFocus: false,
   });
 
   const { mutate: handleDeleteHabit, isPending: isDeleting } = useMutation({
@@ -161,9 +162,10 @@ export function Habit() {
           habit={loggingHabit}
         />
       )}
-      {isShowCompleteDialog && (
-        <CompleteEffect onClick={() => setIsShowCompleteDialog(false)} />
-      )}
+      <CompleteEffect
+        isOpen={isShowCompleteDialog}
+        onClick={() => setIsShowCompleteDialog(false)}
+      />
     </Fragment>
   );
 }

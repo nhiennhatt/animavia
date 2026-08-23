@@ -7,12 +7,7 @@ import { useCallback, useState } from "react";
 import { ArrowLeft, ArrowRight, Save } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
-import {
-  createHabitStatementSchema,
-  createHabitSchema,
-  SteppedCreateHabitSchema,
-  CreateHabitSchema,
-} from "@/validations/habit.validation";
+import { SteppedCreateHabitSchema } from "@/validations/habit.validation";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { FormDataContext } from "./context/form-data-context";
 import { cn } from "@/lib/utils";
@@ -22,7 +17,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addHabitStatement, createHabit } from "@/services/habit.service";
 import { useRouter } from "next/navigation";
 import { refreshableQuery } from "@/lib/refreshable-query";
-import { Habit } from "@/types/entities";
 
 export function CreateHabit() {
   const router = useRouter();
@@ -62,7 +56,6 @@ export function CreateHabit() {
     },
     onSuccess: (id: string) => {
       queryClient.invalidateQueries({ queryKey: ["getOwnedHabits"] });
-      console.log(id);
       router.push(`/habit`);
     },
   });
