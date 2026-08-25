@@ -5,10 +5,7 @@ import {
   Logger,
   NotFoundException,
 } from '@nestjs/common';
-import 'dayjs/locale';
-import utc from 'dayjs/plugin/utc';
-import dayjs from 'dayjs';
-dayjs.extend(utc);
+import { dayjs } from '../../utils';
 
 import { habitLogs, habits, type AppPgDatabaseType } from '../../db/db.schema';
 import { AppUser } from '../../utils/types';
@@ -31,7 +28,7 @@ export default class HabitLogService {
     const userTimeZone = user.timezone;
     const currentInUnix = dayjs().unix();
     const startOfCurrentDateInUnix = dayjs()
-      .locale(userTimeZone)
+      .tz(userTimeZone)
       .hour(0)
       .minute(0)
       .second(0)
@@ -102,7 +99,7 @@ export default class HabitLogService {
     if (!habit || habit.length === 0) throw new NotFoundException();
 
     const userTimezone = user.timezone;
-    const parsedTime = dayjs.unix(time).locale(userTimezone);
+    const parsedTime = dayjs.unix(time).tz(userTimezone);
     const startOfTime = parsedTime
       .clone()
       .hour(0)
@@ -139,5 +136,32 @@ export default class HabitLogService {
           ),
         ),
       );
+  }
+
+  async isLoggedToday(user: AppUser, habitId: string) {
+    const habit = await this.db
+      .select({ id: habits.id })
+      .from(habits)
+      .where(and(eq(habits.id, habitId), eq(habits.ownerId, user.id)));
+
+    if (!habit || habit.length === 0) throw new NotFoundException();
+
+    const result = await this.db
+      .select({ id: habitLogs.id })
+      .from(habitLogs)
+      .where(
+        and(
+          eq(habitLogs.habitId, habitId),
+          between(
+            habitLogs.forDate,
+            sql`TO_TIMESTAMP(${dayjs().tz(user.timezone).startOf('d').unix()})`,
+            sql`TO_TIMESTAMP(${dayjs().tz(user.timezone).endOf('d').unix()})`,
+          ),
+        ),
+      );
+
+    if (!result || result.length === 0) return false;
+
+    return true;
   }
 }

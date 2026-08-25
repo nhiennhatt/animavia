@@ -43,4 +43,12 @@ export default class HabitLogController {
       hasThoughtOnly,
     );
   }
+
+  @Get('/today')
+  async getIsLoggedToday(
+    @User() user: AppUser,
+    @Query('habitId', new ParseUUIDPipe()) habitId: string,
+  ) {
+    return this.habitLogService.isLoggedToday(user, habitId);
+  }
 }
