@@ -1,0 +1,1 @@
+DROP INDEX "habit_logs_habit_id_for_date_thought";

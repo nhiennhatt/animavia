@@ -90,12 +90,7 @@ export const habitLogs = pgTable(
       .notNull()
       .references(() => habits.id, { onDelete: 'cascade' }),
   },
-  (t) => [
-    index('habit_logs_habit_id_for_date').on(t.habitId, t.forDate),
-    index('habit_logs_habit_id_for_date_thought')
-      .on(t.habitId, t.forDate)
-      .where(sql`${t.thought} IS NOT NULL and TRIM(${t.thought}) <> ''`),
-  ],
+  (t) => [index('habit_logs_habit_id_for_date').on(t.habitId, t.forDate)],
 );
 
 export const habitValues = pgTable('habit_values', {

@@ -15,6 +15,11 @@ const getStatementsByHabitSchema = z.object({
   habitId: z.uuid(),
   pageSize: z.coerce.number().int().max(10).min(1).default(5),
   page: z.coerce.number().int().max(15).min(1).default(1),
+  random: z.coerce
+    .number()
+    .int()
+    .optional()
+    .transform((v) => !v),
 });
 
 export class GetStatementsByHabitSchema extends createZodDto(

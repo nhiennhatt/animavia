@@ -55,12 +55,19 @@ export default class StatementService {
     return result[0];
   }
 
-  async getStatementsByHabit(
-    habitId: string,
-    userId: string,
-    pageSize: number = 5,
-    page: number = 1,
-  ) {
+  async getStatementsByHabit({
+    userId,
+    habitId,
+    pageSize = 5,
+    page = 1,
+    random = false,
+  }: {
+    habitId: string;
+    userId: string;
+    pageSize?: number;
+    page?: number;
+    random?: boolean;
+  }) {
     const habit = await this.db.query.habits.findFirst({
       columns: { id: true },
       where: { id: habitId, ownerId: userId },
@@ -72,6 +79,7 @@ export default class StatementService {
       where: { habitId },
       offset: (page - 1) * pageSize,
       limit: pageSize,
+      ...(random ? { orderBy: (t, { sql }) => sql`random()` } : {}),
     });
   }
 

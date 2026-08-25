@@ -30,12 +30,10 @@ export default class StatementController {
     @User() user: AppUser,
     @Query() query: GetStatementsByHabitSchema,
   ) {
-    return this.statementService.getStatementsByHabit(
-      query.habitId,
-      user.id,
-      query.pageSize,
-      query.page,
-    );
+    return this.statementService.getStatementsByHabit({
+      ...query,
+      userId: user.id,
+    });
   }
 
   @Get(':id')
