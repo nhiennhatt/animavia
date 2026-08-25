@@ -1,0 +1,2 @@
+CREATE INDEX "habit_logs_habit_id_for_date" ON "habit_logs" ("habit_id","for_date");--> statement-breakpoint
+CREATE INDEX "habit_logs_habit_id_for_date_thought" ON "habit_logs" ("habit_id","for_date") WHERE "thought" IS NOT NULL and TRIM("thought") <> '';

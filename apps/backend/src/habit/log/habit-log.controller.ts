@@ -32,8 +32,15 @@ export default class HabitLogController {
   @Get('')
   async getLog(
     @User() user: AppUser,
-    @Query() { habit_id, period, time }: GetHabitLogParamsSchema,
+    @Query()
+    { habit_id, period, time, hasThoughtOnly }: GetHabitLogParamsSchema,
   ) {
-    return await this.habitLogService.getLogs(user, habit_id, period, time);
+    return await this.habitLogService.getLogs(
+      user,
+      habit_id,
+      period,
+      time,
+      hasThoughtOnly,
+    );
   }
 }

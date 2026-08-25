@@ -9,7 +9,7 @@ import {
   boolean,
   text,
 } from 'drizzle-orm/pg-core';
-import { defineRelations, desc } from 'drizzle-orm';
+import { and, defineRelations, desc, isNotNull, ne, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import {
   HabitType,
@@ -75,19 +75,28 @@ export const habitStatements = pgTable('habit_statements', {
     .references(() => habits.id, { onDelete: 'cascade' }),
 });
 
-export const habitLogs = pgTable('habit_logs', {
-  id: uuid().primaryKey().defaultRandom(),
-  loggedAt: timestamp('logged_at', { withTimezone: false })
-    .defaultNow()
-    .notNull(),
-  forDate: timestamp('for_date', { withTimezone: false })
-    .defaultNow()
-    .notNull(),
-  thought: text(),
-  habitId: uuid('habit_id')
-    .notNull()
-    .references(() => habits.id, { onDelete: 'cascade' }),
-});
+export const habitLogs = pgTable(
+  'habit_logs',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    loggedAt: timestamp('logged_at', { withTimezone: false })
+      .defaultNow()
+      .notNull(),
+    forDate: timestamp('for_date', { withTimezone: false })
+      .defaultNow()
+      .notNull(),
+    thought: text(),
+    habitId: uuid('habit_id')
+      .notNull()
+      .references(() => habits.id, { onDelete: 'cascade' }),
+  },
+  (t) => [
+    index('habit_logs_habit_id_for_date').on(t.habitId, t.forDate),
+    index('habit_logs_habit_id_for_date_thought')
+      .on(t.habitId, t.forDate)
+      .where(sql`${t.thought} IS NOT NULL and TRIM(${t.thought}) <> ''`),
+  ],
+);
 
 export const habitValues = pgTable('habit_values', {
   id: uuid().primaryKey().defaultRandom(),

@@ -12,7 +12,7 @@ dayjs.extend(utc);
 
 import { habitLogs, habits, type AppPgDatabaseType } from '../../db/db.schema';
 import { AppUser } from '../../utils/types';
-import { and, between, eq, getColumns, sql } from 'drizzle-orm';
+import { and, between, eq, getColumns, isNotNull, ne, sql } from 'drizzle-orm';
 
 @Injectable()
 export default class HabitLogService {
@@ -92,6 +92,7 @@ export default class HabitLogService {
     habitId: string,
     timeUnit: 'm' | 'w',
     time: number,
+    hasThoughtOnly: boolean = false,
   ) {
     const habit = await this.db
       .select({ id: habits.id })
@@ -125,6 +126,12 @@ export default class HabitLogService {
       .where(
         and(
           eq(habitLogs.habitId, habitId),
+          ...(hasThoughtOnly
+            ? [
+                isNotNull(habitLogs.thought),
+                ne(sql`TRIM(${habitLogs.thought})`, ''),
+              ]
+            : []),
           between(
             habitLogs.forDate,
             sql`to_timestamp(${startOfTime.unix()})`,

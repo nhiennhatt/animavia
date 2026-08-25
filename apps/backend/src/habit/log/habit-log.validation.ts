@@ -18,6 +18,7 @@ export const getHabitLogParamsSchema = z.object({
     .positive()
     .optional()
     .default(() => Math.trunc(new Date().getTime() / 1000)),
+  hasThoughtOnly: z.coerce.boolean().optional().default(false),
 });
 
 export class GetHabitLogParamsSchema extends createZodDto(
