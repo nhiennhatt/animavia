@@ -44,3 +44,14 @@ export const logHabitSchema = z.object({
 });
 
 export interface LogHabitSchema extends z.infer<typeof logHabitSchema> {}
+
+export const getHabitStatementsSchema = z.object({
+  habitId: z.uuid(),
+  pageSize: z.int32().positive().min(1).optional().default(5),
+  page: z.int32().positive().min(1).optional().default(1),
+  random: z.boolean().optional().default(false),
+});
+
+export interface GetHabitStatementsSchema extends z.infer<
+  typeof getHabitStatementsSchema
+> {}

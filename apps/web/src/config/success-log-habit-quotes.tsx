@@ -1,11 +1,6 @@
 export const successLogHabitQuotes = [
   {
     statement:
-      "Câu hỏi này dẫn tôi đến một hoạt động vô cùng quan trọng trong đời sống Ki-tô hữu mà có thể tôi không biết, hoặc biết mà quên hay dửng dưng, đó là cầu nguyện, suy ngẫm, chiêm niệm, linh thao. Tôi khó có thể nói quay về với chính mình, trở về với Chúa và nối lại tình người nếu tôi ít hoặc không dành thời gian để hồi tâm.",
-    source: "Anthony Lê Đức, SVD - Chăm sóc ngôi nhà chung",
-  },
-  {
-    statement:
       "Mọi cảm xúc, dù là tiêu cực hay tích cực, đều có lý do để tồn tại. Việc của chúng ta là lắng nghe, không phải phán xét.",
   },
   {
@@ -39,5 +34,5 @@ export const successLogHabitQuotes = [
   {
     statement:
       "Sự bình yên không đến từ việc triệt tiêu mọi suy nghĩ tiêu cực, mà đến từ việc bạn không cho phép những suy nghĩ ấy định nghĩa con người mình.",
-  },
+  }
 ];

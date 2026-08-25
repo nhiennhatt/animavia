@@ -6,7 +6,7 @@
     "apps/*"
   ],
   "devDependencies": {
-    "turbo": "^2.10.10"
+    "turbo": "^2.10.11"
   },
   "dependencies": {
     "dayjs": "^1.11.23",

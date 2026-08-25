@@ -12,6 +12,8 @@ import {
   CreateHabitSchema,
   GetHabitsSchema,
   logHabitSchema,
+  GetHabitStatementsSchema,
+  getHabitStatementsSchema,
 } from "@/validations/habit.validation";
 import z from "zod";
 
@@ -232,6 +234,73 @@ export async function logHabit(
       code: res.code,
     };
   }
+
+  return {
+    success: true,
+    code: "SUCCESS",
+    data: res.data,
+  };
+}
+
+export async function getHabitStatements(
+  params: GetHabitStatementsSchema,
+): Promise<AppServerResponse<Statement[]>> {
+  const validation = await validateSchemaAsync(
+    params,
+    getHabitStatementsSchema,
+  );
+
+  if (!validation.success) {
+    return {
+      ...validation,
+      code: "VALIDATION_FAILED",
+    };
+  }
+
+  const req = await protectedHttpClient("/statement", {
+    params: { ...validation.data, random: validation.data.random ? 1 : 0 },
+  });
+
+  const res: ApiResponse<Statement[]> = req.data;
+
+  if (res.error) {
+    return {
+      success: false,
+      code: res.code,
+      error: res.error,
+    };
+  }
+
+  return {
+    success: true,
+    data: res.data || [],
+    code: "SUCCESS",
+  };
+}
+
+export async function checkLoggedToday(
+  habitId: string,
+): Promise<AppServerResponse<boolean>> {
+  const validation = await validateSchemaAsync(habitId, z.uuid());
+
+  if (!validation.success)
+    return {
+      ...validation,
+      code: "VALIDATION_FAILED",
+    };
+
+  const result = await protectedHttpClient(`/habit-log/today`, {
+    params: { habitId: validation.data },
+  });
+
+  const res: ApiResponse<boolean> = result.data;
+
+  if (res.error)
+    return {
+      success: false,
+      code: res.code,
+      error: res.error,
+    };
 
   return {
     success: true,

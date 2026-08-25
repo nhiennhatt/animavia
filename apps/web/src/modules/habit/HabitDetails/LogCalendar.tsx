@@ -1,10 +1,6 @@
-import { useUser } from "@/hooks/use-user";
-import { dayjs } from "@/lib/dayjs";
 import { cn } from "@/lib/utils";
-import { getHabitLogs } from "@/services/habit.service";
 import { Habit, HabitLog } from "@/types/entities";
-import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { BaseUser } from "@/types/user";
 import {
   DayPicker,
   DayPickerProps,
@@ -12,35 +8,29 @@ import {
 } from "react-day-picker";
 import { vi } from "react-day-picker/locale";
 
-export function LogCalendar({ habit }: { habit: Habit }) {
-  const { user } = useUser();
+export function LogCalendar({
+  habit,
+  month,
+  setMonth,
+  logs,
+  user,
+  onClickDay,
+}: {
+  habit: Habit;
+  month: Date;
+  setMonth: (date: Date) => void;
+  logs: HabitLog[];
+  user: BaseUser;
+  onClickDay: DayPickerProps["onDayClick"];
+}) {
   const defaultClassNames = getDefaultClassNames();
-  const [month, setMonth] = useState<Date>(new Date());
-  const { data: logs = [], isLoading: isLoadingLogs } = useQuery({
-    queryKey: [
-      "monthHabitLog",
-      habit.id,
-      dayjs(month).tz(user?.timezone).format("YYYY-MM"),
-    ],
-    queryFn: async () => {
-      const res = await getHabitLogs(
-        habit.id,
-        Math.trunc(month.getTime() / 1000),
-        "m",
-      );
-      if (res.error || !res.data) return [];
-
-      return res.data;
-    },
-  });
-
   const modifiers: DayPickerProps["modifiers"] = {
     logged: logs.map((l) => new Date(l.forDate * 1000)),
   };
 
   return (
     <DayPicker
-      timeZone={user?.timezone}
+      timeZone={user.timezone}
       month={month}
       onMonthChange={(m) => setMonth(m)}
       modifiers={modifiers}
@@ -49,9 +39,7 @@ export function LogCalendar({ habit }: { habit: Habit }) {
       endMonth={new Date()}
       disabled={{ before: new Date(habit.createdAt), after: new Date() }}
       weekStartsOn={0}
-      onDayClick={(day, m) => {
-        console.log(m);
-      }}
+      onDayClick={onClickDay}
       formatters={{
         formatWeekdayName: (wd, ops, lib) =>
           lib?.format(wd, "eeeee", { locale: vi }) || `${wd.getDay()}`,
