@@ -1,10 +1,10 @@
 import z from 'zod';
-import { HabitType, LifeDomains } from '../../utils/constants';
 import { createZodDto } from 'nestjs-zod';
+import { HabitType, LifeDomains } from '../../utils/constants';
 
 export const generateHabitValidation = z.object({
-  name: z.string().min(5).max(110),
-  objective: z.string().max(320).optional(),
+  name: z.string().trim().min(5).max(110),
+  objective: z.string().trim().max(320).optional(),
   htype: z.enum(Object.values(HabitType)),
   domain: z.array(z.enum(Object.values(LifeDomains))).min(1),
   weeklyGoal: z.int().min(1).max(7).default(7).optional(),
@@ -17,8 +17,8 @@ export class GenerateHabitValidation extends createZodDto(
 
 export const updateHabitValidation = z
   .object({
-    name: z.string().min(5).max(110).optional(),
-    objective: z.string().max(320).optional(),
+    name: z.string().trim().min(5).max(110).optional(),
+    objective: z.string().trim().max(320).optional(),
     htype: z.enum(Object.values(HabitType)).optional(),
     domain: z
       .array(z.enum(Object.values(LifeDomains)))

@@ -2,8 +2,8 @@ import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
 const createStatementSchema = z.object({
-  statement: z.string().max(250).nonempty(),
-  source: z.string().max(110).optional(),
+  statement: z.string().trim().max(250).nonempty(),
+  source: z.string().trim().max(110).optional(),
   habitId: z.uuid(),
 });
 
@@ -22,8 +22,8 @@ export class GetStatementsByHabitSchema extends createZodDto(
 ) {}
 
 export const updateStatementSchema = z.object({
-  statement: z.string().max(250).nonempty().optional(),
-  source: z.string().max(110).optional(),
+  statement: z.string().trim().max(250).nonempty().optional(),
+  source: z.string().trim().max(110).optional(),
 });
 
 export class UpdateStatementSchema extends createZodDto(
