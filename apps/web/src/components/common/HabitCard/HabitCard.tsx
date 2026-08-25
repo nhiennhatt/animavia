@@ -11,6 +11,7 @@ import { getHabitLogs } from "@/services/habit.service";
 import { Button } from "../../ui/button";
 import { WeeklyCalendar } from "../WeeklyCalendar/WeeklyCalendar";
 import { HabitCardDropdownMenu } from "./HabitCardDropdownMenu";
+import Link from "next/link";
 
 export function HabitCard({
   habit,
@@ -52,7 +53,12 @@ export function HabitCard({
     >
       <div>
         <div className="flex">
-          <h3 className="flex-1 max-md:text-xl">{habit.name}</h3>
+          <Link
+            href={`/habit/${habit.id}`}
+            className="flex-1 font-medium font-heading text-2xl max-md:text-xl"
+          >
+            {habit.name}
+          </Link>
           <div>
             <HabitCardDropdownMenu
               onDelete={() => onDelete(habit.id, habit.name)}

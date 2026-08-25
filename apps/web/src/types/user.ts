@@ -5,4 +5,5 @@ export interface BaseUser {
   role: (typeof UserRoleEnum)[keyof typeof UserRoleEnum];
   status: (typeof UserStatusEnum)[keyof typeof UserStatusEnum];
   email: string;
+  timezone: string;
 }

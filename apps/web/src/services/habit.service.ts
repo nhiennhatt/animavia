@@ -1,6 +1,7 @@
 "use server";
 
 import { protectedHttpClient } from "@/lib/http-client";
+import { validateSchemaAsync } from "@/lib/validateSchema";
 import { ApiResponse, AppServerResponse } from "@/types/app";
 import { GetHabitsDto } from "@/types/dto/habit.dto";
 import { Habit, HabitLog, Statement } from "@/types/entities";
@@ -67,6 +68,35 @@ export async function getHabits(
     success: true,
     code: "Success",
     data: response.data,
+  };
+}
+
+export async function getHabit(id: string): Promise<AppServerResponse<Habit>> {
+  const validate = await validateSchemaAsync(id, z.uuid());
+
+  if (!validate.success) {
+    return {
+      success: false,
+      error: validate.error,
+      code: "VALIDATION_FAILED",
+    };
+  }
+
+  const res = await protectedHttpClient(`/habit/${validate.data}`);
+  const data: ApiResponse<Habit> = res.data;
+
+  if (data.error) {
+    return {
+      success: false,
+      code: data.code,
+      error: data.error,
+    };
+  }
+
+  return {
+    code: "SUCCESS",
+    success: true,
+    data: data.data,
   };
 }
 
@@ -140,6 +170,8 @@ export async function addHabitStatement(
 
 export async function getHabitLogs(
   id: string,
+  time: number = Math.trunc(new Date().getTime() / 1000),
+  period: "w" | "m" = "w",
 ): Promise<AppServerResponse<HabitLog[]>> {
   const validation = await z.uuid().safeParseAsync(id);
 
@@ -153,6 +185,8 @@ export async function getHabitLogs(
   const getResult = await protectedHttpClient.get("/habit-log", {
     params: {
       habit_id: id,
+      time,
+      period,
     },
   });
 

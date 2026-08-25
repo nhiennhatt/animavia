@@ -21,6 +21,7 @@ export default function MainLayout({ children }: { children: ReactNode }) {
       <SidebarInset className="bg-white">
         <SidebarTrigger />
         <motion.div
+          className="flex flex-col flex-1"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           key={path.pathname}
