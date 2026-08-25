@@ -56,8 +56,14 @@ export function Habit() {
   });
 
   const { mutate: handleLog, isPending: isLogging } = useMutation({
-    mutationFn: async (params: { id: string; date: number }) => {
-      await refreshableQuery(() => logHabit(params.id, params.date));
+    mutationFn: async (params: {
+      id: string;
+      date: number;
+      thought?: string;
+    }) => {
+      await refreshableQuery(() =>
+        logHabit(params.id, params.date, params.thought),
+      );
     },
     onSuccess: (_, variables) => {
       setLoggingHabit(null);
@@ -157,7 +163,7 @@ export function Habit() {
       {loggingHabit && (
         <LogHabitDialog
           isLogging={isLoading}
-          onLog={(id, date, thought) => handleLog({ id, date })}
+          onLog={(id, date, thought) => handleLog({ id, date, thought })}
           onClose={() => setLoggingHabit(null)}
           habit={loggingHabit}
         />
