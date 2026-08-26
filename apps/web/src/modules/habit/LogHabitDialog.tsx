@@ -66,7 +66,7 @@ export function LogHabitDialog({
             onChange={(e) => setThought(e.currentTarget.value)}
             placeholder="Kể cho mình nghe cảm giác của bạn lúc này nhé (Không bắt buộc)..."
             id="thought"
-            className="resize-none"
+            className="resize-none h-20 overflow-auto text-sm scrollbar-thin scrollbar-thumb-accent scrollbar-track-transparent"
           />
         </Field>
         <DialogFooter className="bg-white border-none">

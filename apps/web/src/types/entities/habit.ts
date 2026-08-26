@@ -26,3 +26,16 @@ export interface HabitLog {
   thought: string | null;
   habitId: string;
 }
+
+export interface HabitBackupPlan {
+  id: string;
+  ifCase: string;
+  then: string;
+  habitId: string;
+}
+export interface HabitValue {
+  id: string;
+  name: string;
+  value: string;
+  habitId: string;
+}

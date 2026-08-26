@@ -77,7 +77,7 @@ export function LogSection({
         )}
       </div>
       <div className="lg:border-s lg:border-s-accent relative">
-        <div className="absolute inset-0 max-h-full flex flex-col gap-y-3 p-1 md:p-3 md:ps-6">
+        <div className="md:absolute inset-0 max-h-full flex flex-col gap-y-3 p-1 md:p-3 md:ps-6">
           <h3 className="flex items-center gap-x-2 text-xl uppercase">
             <Leaf /> Nhật ký thói quen
           </h3>
