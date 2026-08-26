@@ -103,7 +103,7 @@ export const habitValues = pgTable('habit_values', {
 
 export const habitBackupPlans = pgTable('habit_backup_plans', {
   id: uuid().primaryKey().defaultRandom(),
-  case: varchar({ length: 200 }).notNull(),
+  ifCase: varchar('if_case', { length: 200 }).notNull(),
   then: varchar({ length: 200 }).notNull(),
   habitId: uuid('habit_id')
     .notNull()

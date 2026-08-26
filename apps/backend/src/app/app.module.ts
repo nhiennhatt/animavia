@@ -13,6 +13,7 @@ import UserModule from '../user/user.module';
 import HabitModule from '../habit/habit/habit.module';
 import StatementModule from '../habit/statement/statement.module';
 import HabitLogModule from '../habit/log/habit-log.module';
+import BackupPlanModule from '../habit/backup-plan/backupPlan.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import HabitLogModule from '../habit/log/habit-log.module';
     HabitModule,
     StatementModule,
     HabitLogModule,
+    BackupPlanModule,
   ],
   controllers: [AppController],
   providers: [AppService, { provide: APP_PIPE, useClass: ZodValidationPipe }],

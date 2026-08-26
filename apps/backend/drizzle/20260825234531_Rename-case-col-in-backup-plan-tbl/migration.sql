@@ -1,0 +1,1 @@
+ALTER TABLE "habit_backup_plans" RENAME COLUMN "case" TO "if_case";
