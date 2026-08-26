@@ -95,6 +95,7 @@ export const habitLogs = pgTable(
 
 export const habitValues = pgTable('habit_values', {
   id: uuid().primaryKey().defaultRandom(),
+  name: varchar({ length: 80 }).notNull(),
   value: varchar({ length: 190 }).notNull(),
   habitId: uuid('habit_id')
     .notNull()

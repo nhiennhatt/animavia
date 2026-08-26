@@ -1,0 +1,1 @@
+ALTER TABLE "habit_values" ADD COLUMN "name" varchar(80) NOT NULL;

@@ -70,7 +70,9 @@ export default class BackupPlanService {
 
   async deleteBackupPlan(userId: string, backupPlanId: string) {
     const backupPlan = this.db
-      .select()
+      .select({
+        habitId: habitBackupPlans.habitId,
+      })
       .from(habitBackupPlans)
       .where(eq(habitBackupPlans.id, backupPlanId))
       .as('backup_plan');
@@ -99,7 +101,9 @@ export default class BackupPlanService {
     set: { ifCase: string; then: string },
   ) {
     const backupPlan = this.db
-      .select()
+      .select({
+        habitId: habitBackupPlans.habitId,
+      })
       .from(habitBackupPlans)
       .where(eq(habitBackupPlans.id, backupPlanId))
       .as('backup_plan');

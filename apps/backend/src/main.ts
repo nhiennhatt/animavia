@@ -8,11 +8,10 @@ import {
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
 import compression from 'compression';
-import type { CorsOptions } from 'cors';
 
 function getSwaggerConfig() {
   return new DocumentBuilder()
-    .setTitle('Pneuma API')
+    .setTitle('Animavia API')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
