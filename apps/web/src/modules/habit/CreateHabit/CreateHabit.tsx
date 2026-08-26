@@ -14,9 +14,10 @@ import { cn } from "@/lib/utils";
 import { createHabitStepConfig } from "@/config/create-habit-steps-config";
 import { useUser } from "@/hooks/use-user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addHabitStatement, createHabit } from "@/services/habit.service";
+import { createHabit } from "@/services/habit/habit.service";
 import { useRouter } from "next/navigation";
 import { refreshableQuery } from "@/lib/refreshable-query";
+import { addHabitStatement } from "@/services/habit/habit-statement.service";
 
 export function CreateHabit() {
   const router = useRouter();

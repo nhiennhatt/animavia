@@ -105,11 +105,6 @@ export function CompleteEffect({
             <p className="text-primary font-heading text-center text-lg md:text-xl xl:text-2xl pointer-events-none">
               &ldquo;{statement.statement}&rdquo;
             </p>
-            {statement.source && (
-              <span className="italic max-md:text-sm mt-3">
-                {statement.source}
-              </span>
-            )}
           </motion.div>
         </PrimitiveDialog.Content>
         <PrimitiveDialog.Content

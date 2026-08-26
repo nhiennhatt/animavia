@@ -1,4 +1,3 @@
-import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,7 +5,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { EllipsisVertical, Pin, Trash } from "lucide-react";
+import { Pin, Trash } from "lucide-react";
 import { ReactNode } from "react";
 
 export function HabitCardDropdownMenu({

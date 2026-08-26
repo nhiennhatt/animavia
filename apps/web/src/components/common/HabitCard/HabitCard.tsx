@@ -6,7 +6,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Habit } from "@/types/entities";
 import { refreshableQuery } from "@/lib/refreshable-query";
 import { lifeDomainList } from "@/config/life-domain-list";
-import { getHabitLogs } from "@/services/habit.service";
+import { getHabitLogs } from "@/services/habit/habit-log.service";
 
 import { Button } from "../../ui/button";
 import { WeeklyCalendar } from "../WeeklyCalendar/WeeklyCalendar";

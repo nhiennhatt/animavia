@@ -9,7 +9,7 @@ import { AnimatePresence } from "motion/react";
 import { HabitCard } from "@/components/common/HabitCard/HabitCard";
 import { Button } from "@/components/ui/button";
 import { refreshableQuery } from "@/lib/refreshable-query";
-import { deleteHabit, getHabits, logHabit } from "@/services/habit.service";
+import { deleteHabit, getHabits } from "@/services/habit/habit.service";
 import {
   Pagination,
   PaginationContent,
@@ -19,6 +19,7 @@ import {
 import { DeleteConfirmationDialog } from "./DeleteConfirmation";
 import { LogHabitDialog } from "./LogHabitDialog";
 import { CompleteEffect } from "./CompleteEffect";
+import { logHabit } from "@/services/habit/habit-log.service";
 
 export function Habit() {
   const size = 4;

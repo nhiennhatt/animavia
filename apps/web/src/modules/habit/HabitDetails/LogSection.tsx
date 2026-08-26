@@ -8,7 +8,7 @@ import { LogCalendar } from "./LogCalendar";
 import { DayPickerProps } from "react-day-picker";
 import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { getHabitLogs } from "@/services/habit.service";
+import { getHabitLogs } from "@/services/habit/habit-log.service";
 
 export function LogSection({
   habit,

@@ -14,10 +14,7 @@ import {
 import { refreshableQuery } from "@/lib/refreshable-query";
 import {
   getHabit,
-  getHabitStatements,
-  checkLoggedToday,
-  logHabit,
-} from "@/services/habit.service";
+} from "@/services/habit/habit.service";
 import { Badge } from "@/components/ui/badge";
 import { lifeDomainList } from "@/config/life-domain-list";
 import { useUser } from "@/hooks/use-user";
@@ -26,6 +23,8 @@ import { LogHabitDialog } from "../LogHabitDialog";
 import { CompleteEffect } from "../CompleteEffect";
 import { Button } from "@/components/ui/button";
 import { dayjs } from "@/lib/dayjs";
+import { checkLoggedToday, logHabit } from "@/services/habit/habit-log.service";
+import { getHabitStatements } from "@/services/habit/habit-statement.service";
 
 export function HabitDetails({ id }: { id: string }) {
   const { user } = useUser();
