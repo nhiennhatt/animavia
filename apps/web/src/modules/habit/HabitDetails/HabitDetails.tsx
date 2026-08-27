@@ -29,10 +29,13 @@ import { getHabitValues } from "@/services/habit/habit-value.service";
 import { LogSection } from "./LogSection";
 import { CompleteEffect } from "../CompleteEffect";
 import { LogHabitDialog } from "../LogHabitDialog";
+import { useDynamicRoute } from "@/stores/dynamic-route.store";
 
 export function HabitDetails({ id }: { id: string }) {
   const { user } = useUser();
   const queryClient = useQueryClient();
+  const setDynamicRoute = useDynamicRoute((s) => s.setDynamicRoute);
+
   const [isShowCompleteDialog, setIsShowCompleteDialog] =
     useState<boolean>(false);
   const [loggingTime, setLoggingTime] = useState<number | null>(null);
@@ -118,8 +121,19 @@ export function HabitDetails({ id }: { id: string }) {
   });
 
   useEffect(() => {
+    setDynamicRoute({
+      [id]:
+        habit === null
+          ? "404 - Not found"
+          : habit === undefined
+            ? "Loading..."
+            : habit.name,
+    });
+  }, [habit, setDynamicRoute]);
+
+  useEffect(() => {
     if (habit === null) notFound();
-  }, [habit, isLoadingHabit]);
+  }, [habit]);
 
   if (isLoadingHabit || !habit) {
     return (
@@ -131,7 +145,7 @@ export function HabitDetails({ id }: { id: string }) {
 
   return (
     <>
-      <div className="my-12 flex flex-col items-stretch gap-y-14 px-1 lg:px-10 max-w-4xl mx-auto w-full">
+      <div className="my-5 flex flex-col items-stretch gap-y-14 px-1 lg:px-10 max-w-4xl mx-auto w-full">
         <div className="space-y-3 text-center">
           <div className="flex gap-x-2 justify-center py-1">
             {habit.domain.map((d) => {
@@ -201,7 +215,7 @@ export function HabitDetails({ id }: { id: string }) {
                   gradientColor="#7a948230"
                   gradientTo="#8DBA9B"
                   gradientFrom="#426447"
-                  className="p-5"
+                  className="p-3 lg:p-5 h-full"
                 >
                   <div className="space-y-3">
                     <h4 className="text-center text-lg md:text-xl lg:text-2xl text-primary font-semibold font-heading">
@@ -237,7 +251,7 @@ export function HabitDetails({ id }: { id: string }) {
               backupPlans.map((p) => (
                 <div
                   key={p.id}
-                  className="border border-neutral-300 rounded-sm p-1.5 md:p-3 flex gap-x-2 items-center md:text-lg"
+                  className="border border-neutral-300 rounded-sm p-1.5 md:p-3 flex gap-x-2 items-baseline md:text-lg"
                 >
                   <ArrowRight className="text-primary size-4" />
                   <p>

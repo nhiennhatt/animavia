@@ -14,6 +14,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "../ui/sidebar";
 import { cn } from "@/lib/utils";
 import { Button } from "../ui/button";
@@ -21,8 +22,12 @@ import { useUser } from "@/hooks/use-user";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { logout } from "@/services/user.service";
 import Image from "next/image";
+import { usePathname } from "next/navigation";
+import { useEffect } from "react";
 
 export function AppSidebar() {
+  const pathname = usePathname();
+  const { isMobile, setOpenMobile } = useSidebar();
   const { user, loading } = useUser();
   const queryClient = useQueryClient();
   const { mutate: handleLogout } = useMutation({
@@ -35,6 +40,10 @@ export function AppSidebar() {
       });
     },
   });
+
+  useEffect(() => {
+    if (isMobile) setOpenMobile(false);
+  }, [pathname]);
 
   return (
     <Sidebar className="border-none">
@@ -55,7 +64,9 @@ export function AppSidebar() {
               <span className="text-3xl font-bold font-heading text-primary transition-[text-shadow] text-shadow-xs hover:text-shadow-secondary">
                 Animavia
               </span>
-              <p className="mx-0.5 font-sans text-xs font-normal leading-1.5">Dẫn lối tâm hồn</p>
+              <p className="mx-0.5 font-sans text-xs font-normal leading-1.5">
+                Dẫn lối tâm hồn
+              </p>
             </div>
           </Link>
         </div>

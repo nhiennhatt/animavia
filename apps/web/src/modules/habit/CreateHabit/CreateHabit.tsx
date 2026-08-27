@@ -124,12 +124,6 @@ export function CreateHabit() {
   return (
     <div className="flex items-center justify-center px-2">
       <div className="max-w-xl w-full space-y-10 my-10 mb-32">
-        <Button variant="outline" asChild>
-          <Link href="/habit">
-            <ArrowLeft />
-            Quay lại
-          </Link>
-        </Button>
         <div>
           <h1 className="text-center text-primary max-md:text-3xl">
             Gieo mầm thói quen

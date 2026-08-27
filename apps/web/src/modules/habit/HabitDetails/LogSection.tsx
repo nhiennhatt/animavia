@@ -5,7 +5,7 @@ import { Habit } from "@/types/entities";
 import { BaseUser } from "@/types/user";
 import { Skeleton } from "@/components/ui/skeleton";
 import { LogCalendar } from "./LogCalendar";
-import { DayPickerProps } from "react-day-picker";
+import { DayPickerProps, Modifiers } from "react-day-picker";
 import { useCallback, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getHabitLogs } from "@/services/habit/habit-log.service";
@@ -42,23 +42,26 @@ export function LogSection({
 
   const hasThoughtLogs = logs.filter((l) => !!l.thought);
 
-  const handleOnClickDay: DayPickerProps["onDayClick"] = useCallback((d, m) => {
-    const userTz = user?.timezone;
-    if (m.logged || m.disabled) return;
-    if (
-      dayjs().tz(userTz).isSame(d, "day") || // is Today?
-      (dayjs().tz(userTz).subtract(1, "d").isSame(d, "day") &&
-        dayjs()
-          .tz(userTz)
-          .isBefore(dayjs().tz(userTz).hour(7).minute(0).second(0))) // and current is Before 7 a.m?
-    ) {
-      onLog(Math.trunc(d.getTime() / 1000));
-    }
-  }, []);
+  const handleOnClickDay: DayPickerProps["onDayClick"] = useCallback(
+    (d: Date, m: Modifiers) => {
+      const userTz = user?.timezone;
+      if (m.logged || m.disabled) return;
+      if (
+        dayjs().tz(userTz).isSame(d, "day") || // is Today?
+        (dayjs().tz(userTz).subtract(1, "d").isSame(d, "day") &&
+          dayjs()
+            .tz(userTz)
+            .isBefore(dayjs().tz(userTz).hour(7).minute(0).second(0))) // and current is Before 7 a.m?
+      ) {
+        onLog(Math.trunc(d.getTime() / 1000));
+      }
+    },
+    [],
+  );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-2 md:px-1 relative">
-      <div className="p-1 md:p-5 md:pe-10">
+    <div className="grid grid-cols-1 lg:grid-cols-2 md:px-1 relative gap-y-14">
+      <div className="px-5 md:p-5 md:pe-10">
         {!isLoadingLogs ? (
           <LogCalendar
             habit={habit}
@@ -98,12 +101,10 @@ export function LogSection({
                 </div>
               ))
             ) : !isLoadingLogs ? (
-              <div>
-                <p>
-                  Bạn không có nhật ký nào trong tháng{" "}
-                  {dayjs(month).format("MM - YYYY")}
-                </p>
-              </div>
+              <p className="text-center">
+                Bạn không có nhật ký nào trong tháng{" "}
+                {dayjs(month).format("MM - YYYY")}
+              </p>
             ) : (
               <div className="space-y-3">
                 <Skeleton className="h-4 max-w-8" />

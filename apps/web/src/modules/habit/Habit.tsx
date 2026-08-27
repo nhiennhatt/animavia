@@ -77,7 +77,7 @@ export function Habit() {
 
   return (
     <Fragment>
-      <div className="flex flex-col items-center w-full px-2 md:px-4 py-10">
+      <div className="flex flex-col items-center w-full px-2 md:px-4 py-5">
         <div className="w-full max-w-4xl space-y-16">
           <div className="flex flex-col lg:flex-row gap-4 items-end">
             <div className="space-y-3">
@@ -90,14 +90,16 @@ export function Habit() {
                 thành nơi tâm hồn bạn.
               </p>
             </div>
-            <div className="self-center">
-              <Button className="px-4 py-5 rounded-lg" asChild>
-                <Link href="/habit/create">
-                  <Plus />
-                  Gieo một thói quen
-                </Link>
-              </Button>
-            </div>
+            {habits.total < 10 && (
+              <div className="self-center">
+                <Button className="px-4 py-5 rounded-lg" asChild>
+                  <Link href="/habit/create">
+                    <Plus />
+                    Gieo một thói quen
+                  </Link>
+                </Button>
+              </div>
+            )}
           </div>
           <div>
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-x-9 gap-y-16">

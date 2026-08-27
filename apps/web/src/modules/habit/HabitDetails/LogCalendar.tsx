@@ -7,6 +7,7 @@ import {
   getDefaultClassNames,
 } from "react-day-picker";
 import { vi } from "react-day-picker/locale";
+import { dayjs } from "@/lib/dayjs";
 
 export function LogCalendar({
   habit,
@@ -26,6 +27,16 @@ export function LogCalendar({
   const defaultClassNames = getDefaultClassNames();
   const modifiers: DayPickerProps["modifiers"] = {
     logged: logs.map((l) => new Date(l.forDate * 1000)),
+    freeze:
+      !logs.some((l) =>
+        dayjs
+          .unix(l.forDate)
+          .tz(user.timezone)
+          .add(1, "d")
+          .isSame(dayjs().tz(user.timezone), "d"),
+      ) && dayjs().tz(user.timezone).hour() < 7
+        ? [dayjs().tz(user.timezone).subtract(1, "d").toDate()]
+        : [],
   };
 
   return (
