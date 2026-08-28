@@ -3,6 +3,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModule, Transport } from '@nestjs/microservices';
 import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
+import { ThrottlerModule, ThrottlerStorageService } from '@nestjs/throttler';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -15,30 +16,15 @@ import StatementModule from '../habit/statement/statement.module';
 import HabitLogModule from '../habit/log/habit-log.module';
 import BackupPlanModule from '../habit/backup-plan/backupPlan.module';
 import HabitValueModule from '../habit/value/habit-value.module';
+import { clientModuleOptions, throllerModuleOptions } from '../utils/config';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     DbModule,
     RedisModule,
-    ClientsModule.registerAsync({
-      isGlobal: true,
-      clients: [
-        {
-          imports: [ConfigModule],
-          inject: [ConfigService],
-          name: 'EMAIL_SERVICE',
-          useFactory: (configService: ConfigService) => ({
-            transport: Transport.REDIS,
-            options: {
-              // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
-              host: configService.get('REDIS_HOST', ''),
-              port: parseInt(configService.get('REDIS_PORT', '6379')),
-            },
-          }),
-        },
-      ],
-    }),
+    ClientsModule.registerAsync(clientModuleOptions),
+    ThrottlerModule.forRootAsync(throllerModuleOptions),
     AuthModule,
     UserModule,
     HabitModule,
