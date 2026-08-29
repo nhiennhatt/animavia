@@ -1,4 +1,3 @@
-import { and, count, eq, getColumns } from 'drizzle-orm';
 import {
   BadRequestException,
   Inject,
@@ -12,10 +11,15 @@ import {
   habits,
   type AppPgDatabaseType,
 } from '../../db/db.schema';
+import BackupPlanRepository from './backupPlan.repository';
+import HabitService from '../habit/habit.service';
 
 @Injectable()
 export default class BackupPlanService {
-  constructor(@Inject('DB') private readonly db: AppPgDatabaseType) {}
+  constructor(
+    private readonly habitService: HabitService,
+    private readonly backupPlanRepository: BackupPlanRepository,
+  ) {}
 
   async createBackupPlan(
     habitId: string,
@@ -23,30 +27,30 @@ export default class BackupPlanService {
     then: string,
     userId: string,
   ) {
-    const habit = await this.db
-      .select({ id: habits.id })
-      .from(habits)
-      .where(and(eq(habits.id, habitId), eq(habits.ownerId, userId)));
+    const existHabit = await this.habitService.checkAlreadyExistingHabit(
+      habitId,
+      userId,
+    );
 
-    if (!habit || habit.length === 0) throw new NotFoundException();
+    if (!existHabit) throw new NotFoundException();
 
-    const opetationResult = await this.db.transaction(async (tx) => {
-      const currentAmount = await tx
-        .select({ amount: count(habitBackupPlans.id) })
-        .from(habitBackupPlans)
-        .where(eq(habitBackupPlans.habitId, habitId));
+    const opetationResult = await this.backupPlanRepository
+      .getTxHost()
+      .withTransaction(async () => {
+        const currentAmount = await this.backupPlanRepository.count(habitId);
 
-      if (currentAmount && currentAmount[0] && currentAmount[0].amount >= 5) {
-        throw new BadRequestException('OUT_OF_LIMIT');
-      }
+        if (currentAmount <= 0) {
+          throw new BadRequestException('OUT_OF_LIMIT');
+        }
 
-      const instance = await tx
-        .insert(habitBackupPlans)
-        .values({ habitId, ifCase, then })
-        .returning();
+        const instance = await this.backupPlanRepository.createNewBackupPlan({
+          habitId,
+          ifCase,
+          then,
+        });
 
-      return instance;
-    });
+        return instance;
+      });
 
     if (opetationResult.length === 0) throw new InternalServerErrorException();
 
@@ -54,43 +58,26 @@ export default class BackupPlanService {
   }
 
   async getBackupPlans(userId: string, habitId: string) {
-    const habit = await this.db
-      .select({ id: habits.id })
-      .from(habits)
-      .where(and(eq(habits.id, habitId), eq(habits.ownerId, userId)));
+    const existHabit = await this.habitService.checkAlreadyExistingHabit(
+      habitId,
+      userId,
+    );
 
-    if (!habit || habit.length === 0) throw new NotFoundException();
+    if (!existHabit) throw new NotFoundException();
 
-    return await this.db.query.habitBackupPlans.findMany({
-      where: {
-        habitId,
-      },
-    });
+    return await this.backupPlanRepository.getBackupPlans(habitId);
   }
 
   async deleteBackupPlan(userId: string, backupPlanId: string) {
-    const backupPlan = this.db
-      .select({
-        habitId: habitBackupPlans.habitId,
-      })
-      .from(habitBackupPlans)
-      .where(eq(habitBackupPlans.id, backupPlanId))
-      .as('backup_plan');
+    const ownedBackupPlan = await this.backupPlanRepository.checkOwnBackupPlan(
+      backupPlanId,
+      userId,
+    );
 
-    const joinedHabit = await this.db
-      .select({
-        ...getColumns(backupPlan),
-        userId: habits.ownerId,
-      })
-      .from(backupPlan)
-      .leftJoin(habits, eq(backupPlan.habitId, habits.id));
+    if (!ownedBackupPlan) throw new NotFoundException();
 
-    if (!joinedHabit || !joinedHabit[0] || joinedHabit[0].userId !== userId)
-      throw new NotFoundException();
-
-    const deleteOperation = await this.db
-      .delete(habitBackupPlans)
-      .where(eq(habitBackupPlans.id, backupPlanId));
+    const deleteOperation =
+      await this.backupPlanRepository.deleteBackupPlan(backupPlanId);
 
     return deleteOperation.rowCount;
   }
@@ -100,29 +87,17 @@ export default class BackupPlanService {
     backupPlanId: string,
     set: { ifCase: string; then: string },
   ) {
-    const backupPlan = this.db
-      .select({
-        habitId: habitBackupPlans.habitId,
-      })
-      .from(habitBackupPlans)
-      .where(eq(habitBackupPlans.id, backupPlanId))
-      .as('backup_plan');
+    const ownedBackupPlan = await this.backupPlanRepository.checkOwnBackupPlan(
+      backupPlanId,
+      userId,
+    );
 
-    const joinedHabit = await this.db
-      .select({
-        ...getColumns(backupPlan),
-        userId: habits.ownerId,
-      })
-      .from(backupPlan)
-      .leftJoin(habits, eq(backupPlan.habitId, habits.id));
+    if (!ownedBackupPlan) throw new NotFoundException();
 
-    if (!joinedHabit || !joinedHabit[0] || joinedHabit[0].userId !== userId)
-      throw new NotFoundException();
-
-    const updateOperation = await this.db
-      .update(habitBackupPlans)
-      .set(set)
-      .returning();
+    const updateOperation = await this.backupPlanRepository.updateBackupPlan(
+      backupPlanId,
+      set,
+    );
 
     if (!updateOperation || !updateOperation[0])
       throw new InternalServerErrorException();

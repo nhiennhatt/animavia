@@ -1,20 +1,19 @@
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { and, count, eq } from 'drizzle-orm';
-import {
-  habits,
-  habitValues,
-  type AppPgDatabaseType,
-} from '../../db/db.schema';
+
+import HabitValueRepository from './habit-value.repository';
+import HabitService from '../habit/habit.service';
 
 @Injectable()
 export default class HabitValueService {
-  constructor(@Inject('DB') private readonly db: AppPgDatabaseType) {}
+  constructor(
+    private readonly habitService: HabitService,
+    private readonly habitValueRepository: HabitValueRepository,
+  ) {}
 
   async createHabitValue(
     userId: string,
@@ -22,30 +21,31 @@ export default class HabitValueService {
     name: string,
     value: string,
   ) {
-    const habit = await this.db
-      .select({ id: habits.id })
-      .from(habits)
-      .where(and(eq(habits.id, habitId), eq(habits.ownerId, userId)));
+    const existHabit = await this.habitService.checkAlreadyExistingHabit(
+      habitId,
+      userId,
+    );
 
-    if (!habit || habit.length === 0) throw new NotFoundException();
+    if (!existHabit) throw new NotFoundException();
 
-    const opetationResult = await this.db.transaction(async (tx) => {
-      const currentAmount = await tx
-        .select({ amount: count(habitValues.id) })
-        .from(habitValues)
-        .where(eq(habitValues.habitId, habitId));
+    const opetationResult = await this.habitValueRepository
+      .getTxHost()
+      .withTransaction(async () => {
+        const currentAmount =
+          await this.habitValueRepository.countHabitValue(habitId);
 
-      if (currentAmount && currentAmount[0] && currentAmount[0].amount >= 5) {
-        throw new BadRequestException('OUT_OF_LIMIT');
-      }
+        if (currentAmount >= 5) {
+          throw new BadRequestException('OUT_OF_LIMIT');
+        }
 
-      const instance = await tx
-        .insert(habitValues)
-        .values({ habitId, name, value })
-        .returning();
+        const instance = await this.habitValueRepository.createNewHabitValue({
+          habitId,
+          name,
+          value,
+        });
 
-      return instance;
-    });
+        return instance;
+      });
 
     if (opetationResult.length === 0) throw new InternalServerErrorException();
 
@@ -53,16 +53,13 @@ export default class HabitValueService {
   }
 
   async getHabitValues(userId: string, habitId: string) {
-    const habit = await this.db
-      .select({ id: habits.id })
-      .from(habits)
-      .where(and(eq(habits.id, habitId), eq(habits.ownerId, userId)));
+    const existHabit = await this.habitService.checkAlreadyExistingHabit(
+      habitId,
+      userId,
+    );
 
-    if (!habit || habit.length === 0) throw new NotFoundException();
+    if (!existHabit) throw new NotFoundException();
 
-    return await this.db
-      .select()
-      .from(habitValues)
-      .where(eq(habitValues.habitId, habitId));
+    return await this.habitValueRepository.getHabitValues(habitId);
   }
 }

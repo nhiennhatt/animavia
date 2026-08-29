@@ -17,6 +17,7 @@ import {
   UserRoleEnum,
   UserStatusEnum,
 } from '../utils/constants';
+import { TransactionalAdapterDrizzleOrm } from '@nestjs-cls/transactional-adapter-drizzle-orm';
 
 export const userStatusPgEnum = pgEnum(
   'user_status_enum',
@@ -148,3 +149,6 @@ export const dbRelations = defineRelations(
 );
 
 export type AppPgDatabaseType = NodePgDatabase<typeof dbRelations>;
+
+export type DbStransactionAdapter =
+  TransactionalAdapterDrizzleOrm<AppPgDatabaseType>;

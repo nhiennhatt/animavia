@@ -11,34 +11,30 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import argon2 from 'argon2';
-import { users, type AppPgDatabaseType } from '../db/db.schema';
 import { JwtService } from './jwt.service';
 import {
   JsonWebTokenError,
   NotBeforeError,
   TokenExpiredError,
 } from 'jsonwebtoken';
+import AuthRepository from './auth.repository';
+import { UserRoleEnum, UserStatusEnum } from '../utils/constants';
 
 @Injectable()
 export default class AuthService {
   private readonly logger = new Logger(AuthService.name);
 
   constructor(
-    @Inject('DB') private readonly db: AppPgDatabaseType,
     @Inject('REDIS_CLIENT') private readonly redis: Redis,
     @Inject('EMAIL_SERVICE') private readonly emailService: ClientProxy,
     private readonly jwtService: JwtService,
+    private readonly authRepository: AuthRepository,
   ) {}
 
   async sendRegistrationOtp(email: string) {
-    const user = await this.db.query.users.findFirst({
-      columns: { id: true },
-      where: {
-        email,
-      },
-    });
+    const isExist = await this.authRepository.isExistingUser(email);
 
-    if (user)
+    if (isExist)
       throw new HttpException(
         'Email is already existing',
         HttpStatus.BAD_REQUEST,
@@ -54,14 +50,9 @@ export default class AuthService {
     if (storedEmail !== email)
       throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
 
-    const user = await this.db.query.users.findFirst({
-      columns: { id: true },
-      where: {
-        email,
-      },
-    });
+    const isExist = await this.authRepository.isExistingUser(email);
 
-    if (user) throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
+    if (isExist) throw new HttpException('Invalid OTP', HttpStatus.BAD_REQUEST);
 
     const registrationToken = crypto.randomUUID();
     await this.redis.set(
@@ -94,17 +85,21 @@ export default class AuthService {
       timeCost: 4,
     });
 
-    const result = await this.db
-      .insert(users)
-      .values({ email, password: hashedPassword, givenName, timezone })
-      .onConflictDoNothing({ target: users.email });
+    const result = await this.authRepository.createNewUser({
+      email,
+      givenName,
+      password: hashedPassword,
+      timezone,
+      role: UserRoleEnum.PRACTITIONER,
+      status: UserStatusEnum.ACTIVE,
+    });
 
     if (result.rowCount === 0)
-      throw new HttpException('User is already existing', HttpStatus.CONFLICT);
+      throw new HttpException('Invalid token', HttpStatus.BAD_REQUEST);
   }
 
   async validateUser(email: string, plainPassword: string) {
-    const user = await this.db.query.users.findFirst({ where: { email } });
+    const user = await this.authRepository.getUser(email);
     if (!user) throw new UnauthorizedException();
     const result = await argon2.verify(user.password, plainPassword);
     if (!result) throw new UnauthorizedException();
@@ -116,17 +111,7 @@ export default class AuthService {
     try {
       const payload = this.jwtService.verifyAccessToken(token);
 
-      const user = await this.db.query.users.findFirst({
-        columns: {
-          id: true,
-          email: true,
-          status: true,
-          role: true,
-          givenName: true,
-          timezone: true,
-        },
-        where: { id: payload.userId },
-      });
+      const user = await this.authRepository.getUserById(payload.userId);
 
       if (!user) throw new UnauthorizedException();
 
@@ -152,10 +137,7 @@ export default class AuthService {
 
       await this.addTokenToBlackList(payload.jti);
 
-      const user = await this.db.query.users.findFirst({
-        columns: { id: true, email: true, status: true },
-        where: { id: payload.userId },
-      });
+      const user = await this.authRepository.getUserById(payload.userId);
 
       if (!user) throw new ForbiddenException();
 
@@ -233,25 +215,17 @@ export default class AuthService {
       given_name: string;
     };
 
-    const userInstance = await this.db
-      .insert(users)
-      .values({
-        email: userData.email,
-        givenName: userData.given_name,
-        password: await argon2.hash(randomUUID(), {
-          type: argon2.argon2id,
-          memoryCost: 2 ** 17,
-          parallelism: 2,
-          timeCost: 4,
-        }),
-      })
-      .onConflictDoUpdate({
-        target: users.email,
-        set: {
-          givenName: userData.given_name || '',
-        },
-      })
-      .returning();
+    const userInstance = await this.authRepository.upsertUser({
+      email: userData.email,
+      givenName: userData.given_name,
+      password: await argon2.hash(randomUUID(), {
+        type: argon2.argon2id,
+        memoryCost: 2 ** 17,
+        parallelism: 2,
+        timeCost: 4,
+      }),
+      timezone,
+    });
 
     return this.assignTokenPair({
       id: userInstance[0].id,

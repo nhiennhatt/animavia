@@ -1,49 +1,43 @@
-import { and, count, desc, eq, getColumns, sql } from 'drizzle-orm';
 import {
   BadRequestException,
-  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
+
 import {
   GenerateHabitValidation,
   UpdateHabitValidation,
 } from './habit.validation';
-import {
-  habits,
-  habitStatements,
-  type AppPgDatabaseType,
-} from '../../db/db.schema';
+import { habits, habitStatements } from '../../db/db.schema';
 import { HabitType } from '../../utils/constants';
+import HabitRepository from './habit.repository';
 
 @Injectable()
 export default class HabitService {
-  constructor(@Inject('DB') private readonly db: AppPgDatabaseType) {}
+  constructor(private readonly habitRepository: HabitRepository) {}
+
+  async checkAlreadyExistingHabit(habitId: string, ownerId: string) {
+    return await this.habitRepository.checkAlreadyExistingHabit(
+      habitId,
+      ownerId,
+    );
+  }
 
   async generateHabit(userId: string, habit: GenerateHabitValidation) {
-    const generatedHabit = await this.db.transaction(async (tx) => {
-      const habitAmount = await tx
-        .select({ count: count(habits.id) })
-        .from(habits)
-        .where(eq(habits.ownerId, userId));
+    const generatedHabit = await this.habitRepository
+      .getTxHost()
+      .withTransaction(async () => {
+        const habitAmount =
+          await this.habitRepository.countHabitAmountOfUser(userId);
 
-      if (habitAmount[0].count >= 10)
-        throw new BadRequestException('OUT_OF_LIMIT');
+        if (habitAmount >= 10) throw new BadRequestException('OUT_OF_LIMIT');
 
-      return await tx
-        .insert(habits)
-        .values({
-          htype: habit.htype,
-          domain: habit.domain,
-          name: habit.name,
-          objective: habit.objective,
-          pinned: habit.pinned,
-          weeklyGoal: habit.weeklyGoal,
+        return this.habitRepository.createNewHabit({
+          ...habit,
           ownerId: userId,
-        })
-        .returning();
-    });
+        });
+      });
 
     if (generatedHabit.length <= 0) throw new InternalServerErrorException();
 
@@ -55,25 +49,20 @@ export default class HabitService {
     id: string,
     payload: UpdateHabitValidation,
   ) {
-    const result = await this.db
-      .update(habits)
-      .set(payload)
-      .where(and(eq(habits.id, id), eq(habits.ownerId, userId)));
+    const result = await this.habitRepository.updateHabitByIdAndOwnerId(
+      id,
+      userId,
+      payload,
+    );
 
-    if (!result.rowCount) throw new NotFoundException();
+    if (result.length === 0) throw new NotFoundException();
 
     return { message: 'Oki' };
   }
 
   async getOwnedHabits(
     userId: string,
-    {
-      size = 5,
-      page = 1,
-      htype,
-      pinned,
-      includeQuote = true,
-    }: {
+    options: {
       size?: number;
       page?: number;
       htype?: (typeof HabitType)[keyof typeof HabitType];
@@ -87,71 +76,23 @@ export default class HabitService {
     })[];
     total: number;
   }> {
-    const condition = [eq(habits.ownerId, userId)];
+    const data = await (options.includeQuote
+      ? this.habitRepository.getHabits(userId, options)
+      : this.habitRepository.getHabitsWithRandomStatement(userId, options));
 
-    if (pinned !== undefined) condition.push(eq(habits.pinned, pinned));
+    const total = await this.habitRepository.countHabitAmountOfUser(
+      userId,
+      options,
+    );
 
-    if (htype) condition.push(eq(habits.htype, htype));
-
-    const depaginateHabitQuery = () =>
-      this.db
-        .select()
-        .from(habits)
-        .where(and(...condition))
-        .orderBy(desc(habits.createdAt));
-
-    const habitQuery = depaginateHabitQuery()
-      .offset((page - 1) * size)
-      .limit(Math.min(size, 10));
-
-    let result:
-      | (typeof habits.$inferSelect & {
-          [K in keyof typeof habitStatements.$inferSelect]?:
-            (typeof habitStatements.$inferSelect)[K] | null;
-        })[]
-      | null = null;
-
-    if (includeQuote) {
-      const habitQueryAlias = habitQuery.as('habits');
-      const statementQueryAlias = this.db
-        .select({
-          statement: habitStatements.statement,
-          source: habitStatements.source,
-        })
-        .from(habitStatements)
-        .where(eq(habitQueryAlias.id, habitStatements.habitId))
-        .limit(1)
-        .orderBy(sql`RANDOM()`)
-        .as('statement');
-
-      result = await this.db
-        .select({
-          ...getColumns(habitQueryAlias),
-          statement: statementQueryAlias.statement,
-          source: statementQueryAlias.source,
-        })
-        .from(habitQueryAlias)
-        .leftJoinLateral(statementQueryAlias, sql`true`);
-    }
-
-    const depaginateHabitQueryAlias = depaginateHabitQuery().as('habits');
-    const totalResult = await this.db
-      .select({
-        amount: count(depaginateHabitQueryAlias.id),
-      })
-      .from(depaginateHabitQueryAlias);
-    const total = totalResult[0].amount;
-
-    if (result === null) result = await habitQuery;
-
-    return { data: result, total: total };
+    return {
+      data,
+      total,
+    };
   }
 
   async getHabit(id: string, userId: string) {
-    const result = await this.db
-      .select()
-      .from(habits)
-      .where(and(eq(habits.id, id), eq(habits.ownerId, userId)));
+    const result = await this.habitRepository.getHabitByIdOwnerId(id, userId);
 
     if (!result || result.length === 0) throw new NotFoundException();
 
@@ -159,9 +100,10 @@ export default class HabitService {
   }
 
   async deleteHabit(id: string, userId: string) {
-    const result = await this.db
-      .delete(habits)
-      .where(and(eq(habits.id, id), eq(habits.ownerId, userId)));
+    const result = await this.habitRepository.deleteHabitByIdAndOwnerId(
+      id,
+      userId,
+    );
 
     if (result.rowCount === 0) throw new NotFoundException();
   }

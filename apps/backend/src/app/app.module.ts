@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
-import { ClientsModule, Transport } from '@nestjs/microservices';
+import { ConfigModule } from '@nestjs/config';
+import { ClientsModule } from '@nestjs/microservices';
 import { APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { ThrottlerModule, ThrottlerStorageService } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { ClsModule } from 'nestjs-cls';
 
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -16,12 +17,17 @@ import StatementModule from '../habit/statement/statement.module';
 import HabitLogModule from '../habit/log/habit-log.module';
 import BackupPlanModule from '../habit/backup-plan/backupPlan.module';
 import HabitValueModule from '../habit/value/habit-value.module';
-import { clientModuleOptions, throllerModuleOptions } from '../utils/config';
+import {
+  clientModuleOptions,
+  clsModuleConfig,
+  throllerModuleOptions,
+} from '../utils/config';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     DbModule,
+    ClsModule.forRoot(clsModuleConfig),
     RedisModule,
     ClientsModule.registerAsync(clientModuleOptions),
     ThrottlerModule.forRootAsync(throllerModuleOptions),

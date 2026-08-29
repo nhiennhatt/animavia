@@ -1,6 +1,10 @@
+import { ClsPluginTransactional } from '@nestjs-cls/transactional';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModuleAsyncOptions, Transport } from '@nestjs/microservices';
 import { ThrottlerAsyncOptions } from '@nestjs/throttler';
+import { ClsModuleAsyncOptions, ClsModuleOptions } from 'nestjs-cls';
+import DbModule from '../db/db.module';
+import { TransactionalAdapterDrizzleOrm } from '@nestjs-cls/transactional-adapter-drizzle-orm';
 
 export const clientModuleOptions: ClientsModuleAsyncOptions = {
   isGlobal: true,
@@ -33,4 +37,16 @@ export const throllerModuleOptions: ThrottlerAsyncOptions = {
       },
     ],
   }),
+};
+
+export const clsModuleConfig: ClsModuleOptions = {
+  global: true,
+  plugins: [
+    new ClsPluginTransactional({
+      imports: [DbModule],
+      adapter: new TransactionalAdapterDrizzleOrm({
+        drizzleInstanceToken: 'DB',
+      }),
+    }),
+  ],
 };

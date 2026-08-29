@@ -3,11 +3,13 @@ import AuthService from './auth.service';
 import AuthController from './auth.controller';
 import { JwtService } from './jwt.service';
 import { loadKey } from '../utils';
+import AuthRepository from './auth.repository';
 
 @Global()
 @Module({
   controllers: [AuthController],
   providers: [
+    AuthRepository,
     AuthService,
     {
       provide: 'ACCESS_PRIVATE_KEY',
