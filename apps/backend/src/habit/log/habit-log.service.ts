@@ -60,7 +60,7 @@ export default class HabitLogService {
   async getLogs(
     user: AppUser,
     habitId: string,
-    timeUnit: 'M' | 'w',
+    timeUnit: 'M' | 'w' | 'd',
     time: number,
   ) {
     const habit = await this.habitService.getHabit(habitId, user.id);
@@ -74,18 +74,6 @@ export default class HabitLogService {
       habitId,
       parsedTime.clone().startOf(timeUnit).unix(),
       parsedTime.clone().endOf(timeUnit).unix(),
-    );
-  }
-
-  async isLoggedByDate(user: AppUser, habitId: string) {
-    const habit = await this.habitService.getHabit(habitId, user.id);
-
-    if (!habit) throw new NotFoundException();
-
-    return await this.habitLogRepo.isLoggedByDate(
-      habitId,
-      dayjs().startOf('d').unix(),
-      dayjs().endOf('d').unix(),
     );
   }
 }

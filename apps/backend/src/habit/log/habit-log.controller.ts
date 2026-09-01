@@ -35,12 +35,4 @@ export default class HabitLogController {
   ) {
     return await this.habitLogService.getLogs(user, habit_id, period, time);
   }
-
-  @Get('/today')
-  async isLoggedToday(
-    @User() user: AppUser,
-    @Query('habitId', new ParseUUIDPipe()) habitId: string,
-  ) {
-    return this.habitLogService.isLoggedByDate(user, habitId);
-  }
 }
