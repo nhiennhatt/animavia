@@ -8,6 +8,7 @@ import {
   varchar,
   boolean,
   text,
+  unique,
 } from 'drizzle-orm/pg-core';
 import { and, defineRelations, desc, isNotNull, ne, sql } from 'drizzle-orm';
 import { NodePgDatabase } from 'drizzle-orm/node-postgres';
@@ -86,12 +87,29 @@ export const habitLogs = pgTable(
     forDate: timestamp('for_date', { withTimezone: false })
       .defaultNow()
       .notNull(),
-    thought: text(),
     habitId: uuid('habit_id')
       .notNull()
       .references(() => habits.id, { onDelete: 'cascade' }),
   },
-  (t) => [index('habit_logs_habit_id_for_date').on(t.habitId, t.forDate)],
+  (t) => [unique('habit_logs_habit_id_for_date').on(t.habitId, t.forDate)],
+);
+
+export const habitThoughts = pgTable(
+  'habit_thoughts',
+  {
+    id: uuid().primaryKey().defaultRandom(),
+    loggedAt: timestamp('logged_at', { withTimezone: false })
+      .defaultNow()
+      .notNull(),
+    forDate: timestamp('for_date', { withTimezone: false })
+      .defaultNow()
+      .notNull(),
+    habitId: uuid('habit_id')
+      .notNull()
+      .references(() => habits.id, { onDelete: 'cascade' }),
+    thought: text().notNull(),
+  },
+  (t) => [unique('habit_thoughts_habit_id_for_date').on(t.habitId, t.forDate)],
 );
 
 export const habitValues = pgTable('habit_values', {
@@ -113,7 +131,15 @@ export const habitBackupPlans = pgTable('habit_backup_plans', {
 });
 
 export const dbRelations = defineRelations(
-  { users, habits, habitLogs, habitStatements, habitValues, habitBackupPlans },
+  {
+    users,
+    habits,
+    habitLogs,
+    habitThoughts,
+    habitStatements,
+    habitValues,
+    habitBackupPlans,
+  },
   (r) => ({
     habits: {
       owner: r.one.users({
@@ -124,6 +150,12 @@ export const dbRelations = defineRelations(
     habitLogs: {
       habit: r.one.habits({
         from: r.habitLogs.habitId,
+        to: r.habits.id,
+      }),
+    },
+    habitThoughts: {
+      habit: r.one.habits({
+        from: r.habitThoughts.habitId,
         to: r.habits.id,
       }),
     },

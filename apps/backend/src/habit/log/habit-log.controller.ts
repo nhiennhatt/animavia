@@ -20,35 +20,27 @@ export default class HabitLogController {
   constructor(private readonly habitLogService: HabitLogService) {}
 
   @Post('')
-  async addLog(@User() user: AppUser, @Body() payload: AddHabitLogSchema) {
-    return await this.habitLogService.addLog(
-      user,
-      payload.habitId,
-      payload.date,
-      payload.thought,
-    );
+  async createNewLog(
+    @User() user: AppUser,
+    @Body() payload: AddHabitLogSchema,
+  ) {
+    return this.habitLogService.log(user, payload.habitId, payload.date);
   }
 
   @Get('')
   async getLog(
     @User() user: AppUser,
     @Query()
-    { habit_id, period, time, hasThoughtOnly }: GetHabitLogParamsSchema,
+    { habit_id, period, time }: GetHabitLogParamsSchema,
   ) {
-    return await this.habitLogService.getLogs(
-      user,
-      habit_id,
-      period,
-      time,
-      hasThoughtOnly,
-    );
+    return await this.habitLogService.getLogs(user, habit_id, period, time);
   }
 
   @Get('/today')
-  async getIsLoggedToday(
+  async isLoggedToday(
     @User() user: AppUser,
     @Query('habitId', new ParseUUIDPipe()) habitId: string,
   ) {
-    return this.habitLogService.isLoggedToday(user, habitId);
+    return this.habitLogService.isLoggedByDate(user, habitId);
   }
 }

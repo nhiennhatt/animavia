@@ -5,44 +5,22 @@ import { and, between, eq, getColumns, isNotNull, ne, sql } from 'drizzle-orm';
 
 @Injectable()
 export default class HabitLogRepository extends Repository {
-  async checkAlreadyExistLogInDate(
-    habitId: string,
-    startDate: Date,
-    endDate: Date,
+  log(
+    data: Omit<typeof habitLogs.$inferInsert, 'forDate'> & { forDate: number },
   ) {
-    const startUnix = Math.trunc(startDate.getTime() / 1000);
-    const endUnix = Math.trunc(endDate.getTime() / 1000);
-
-    const result = await this.txHost.tx
-      .select({ id: habitLogs.id })
-      .from(habitLogs)
-      .where(
-        and(
-          eq(habitLogs.habitId, habitId),
-          between(
-            habitLogs.forDate,
-            sql`to_timestamp(${startUnix})`,
-            sql`to_timestamp(${endUnix})`,
-          ),
-        ),
-      );
-
-    return !!(result && result.length > 0);
+    return this.txHost.tx
+      .insert(habitLogs)
+      .values({
+        ...data,
+        forDate: sql`to_timestamp(${data.forDate})`,
+      })
+      .onConflictDoNothing({
+        target: [habitLogs.habitId, habitLogs.forDate],
+      })
+      .returning();
   }
 
-  insertNewLog(data: typeof habitLogs.$inferInsert) {
-    return this.txHost.tx.insert(habitLogs).values(data).returning();
-  }
-
-  getLogs(
-    habitId: string,
-    startDate: Date,
-    endDate: Date,
-    hasThoughtOnly: boolean = false,
-  ) {
-    const startUnix = Math.trunc(startDate.getTime() / 1000);
-    const endUnix = Math.trunc(endDate.getTime() / 1000);
-
+  getLogs(habitId: string, startDate: number, endDate: number) {
     return this.txHost.tx
       .select({
         ...getColumns(habitLogs),
@@ -52,25 +30,16 @@ export default class HabitLogRepository extends Repository {
       .where(
         and(
           eq(habitLogs.habitId, habitId),
-          ...(hasThoughtOnly
-            ? [
-                isNotNull(habitLogs.thought),
-                ne(sql`TRIM(${habitLogs.thought})`, ''),
-              ]
-            : []),
           between(
             habitLogs.forDate,
-            sql`to_timestamp(${startUnix})`,
-            sql`to_timestamp(${endUnix})`,
+            sql`to_timestamp(${startDate})`,
+            sql`to_timestamp(${endDate})`,
           ),
         ),
       );
   }
 
-  async isLoggedByDate(habitId: string, startDate: Date, endDate: Date) {
-    const startUnix = Math.trunc(startDate.getTime() / 1000);
-    const endUnix = Math.trunc(endDate.getTime() / 1000);
-
+  async isLoggedByDate(habitId: string, startDate: number, endDate: number) {
     const result = await this.txHost.tx
       .select({ id: habitLogs.id })
       .from(habitLogs)
@@ -79,12 +48,23 @@ export default class HabitLogRepository extends Repository {
           eq(habitLogs.habitId, habitId),
           between(
             habitLogs.forDate,
-            sql`TO_TIMESTAMP(${startUnix})`,
-            sql`TO_TIMESTAMP(${endUnix})`,
+            sql`TO_TIMESTAMP(${startDate})`,
+            sql`TO_TIMESTAMP(${endDate})`,
           ),
         ),
       );
 
     return !!(result && result.length > 0);
+  }
+
+  deleteLogByHabitIdAndForDate(habitId: string, date: number) {
+    return this.txHost.tx
+      .delete(habitLogs)
+      .where(
+        and(
+          eq(habitLogs.habitId, habitId),
+          eq(habitLogs.forDate, sql`to_timestamp(${date})`),
+        ),
+      );
   }
 }

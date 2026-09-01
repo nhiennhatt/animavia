@@ -22,6 +22,7 @@ import {
   clsModuleConfig,
   throllerModuleOptions,
 } from '../utils/config';
+import ThoughtModule from '../habit/thought/thought.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import {
     HabitModule,
     StatementModule,
     HabitLogModule,
+    ThoughtModule,
     BackupPlanModule,
     HabitValueModule,
   ],

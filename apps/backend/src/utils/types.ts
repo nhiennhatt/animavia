@@ -19,9 +19,3 @@ export interface AppUser {
 export interface AppRequest extends Request {
   user: AppUser;
 }
-
-export interface AppResponse<T> {
-  code: string;
-  data?: T;
-  error?: unknown;
-}

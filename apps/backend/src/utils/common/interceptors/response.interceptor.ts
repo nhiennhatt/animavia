@@ -1,12 +1,10 @@
-import { AppResponse } from './../../types';
 import {
   CallHandler,
   ExecutionContext,
-  HttpException,
   Injectable,
   NestInterceptor,
 } from '@nestjs/common';
-import { catchError, map, Observable, pipe, throwError } from 'rxjs';
+import { map, Observable } from 'rxjs';
 
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {

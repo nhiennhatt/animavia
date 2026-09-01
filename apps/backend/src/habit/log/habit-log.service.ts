@@ -19,59 +19,49 @@ export default class HabitLogService {
     private readonly habitService: HabitService,
   ) {}
 
-  async addLog(
-    user: AppUser,
-    habitId: string,
-    date: number,
-    isDone: boolean = true,
-    thought?: string,
-  ) {
+  async log(user: AppUser, habitId: string, date: number) {
+    const now = dayjs().tz(user.timezone);
+    const startOfDate = now.startOf('d').unix();
+    const targetUnix = dayjs.unix(date).tz(user.timezone).startOf('d').unix();
+
+    if (targetUnix > startOfDate) {
+      throw new BadRequestException('FUTURE_TARGET_DATE');
+    }
+
     const habit = await this.habitService.getHabit(habitId, user.id);
 
     if (!habit) throw new NotFoundException();
 
-    const currentDate = dayjs().tz(user.timezone);
-    const logDate = dayjs.unix(date).tz(user.timezone);
+    const nowUnix = now.unix();
+    const createdUnix = dayjs(habit.createdAt)
+      .tz(user.timezone)
+      .startOf('d')
+      .unix();
 
     if (
-      logDate.isBefore(currentDate.clone().subtract(1, 'd'), 'd') ||
-      logDate.isAfter(currentDate, 'd')
-    )
+      targetUnix > createdUnix ||
+      targetUnix < startOfDate - 86400 ||
+      (targetUnix < startOfDate && nowUnix >= startOfDate + 8 * 3600)
+    ) {
       throw new BadRequestException('OUT_OF_DATE');
+    }
 
-    const isDoneFinal =
-      logDate.isSame(currentDate, 'd') ||
-      currentDate.isBefore(currentDate.clone().hour(8).startOf('h'), 'h')
-        ? isDone
-        : false;
+    const result = await this.habitLogRepo.log({
+      habitId,
+      forDate: targetUnix,
+    });
 
-    const result = await this.habitLogRepo
-      .getTxHost()
-      .withTransaction(async () => {
-        const isLogged = await this.habitLogRepo.checkAlreadyExistLogInDate(
-          habitId,
-          logDate.clone().startOf('d').toDate(),
-          logDate.clone().endOf('d').toDate(),
-        );
-
-        if (isLogged) throw new ConflictException();
-
-        return this.habitLogRepo.insertNewLog({
-          habitId,
-          forDate: logDate.startOf('d').toDate(),
-          thought,
-        });
-      });
-
-    return result;
+    if (!result || result.length === 0) {
+      return null;
+    }
+    return result[0];
   }
 
   async getLogs(
     user: AppUser,
     habitId: string,
-    timeUnit: 'm' | 'w',
+    timeUnit: 'M' | 'w',
     time: number,
-    hasThoughtOnly: boolean = false,
   ) {
     const habit = await this.habitService.getHabit(habitId, user.id);
 
@@ -80,29 +70,22 @@ export default class HabitLogService {
     const userTimezone = user.timezone;
     const parsedTime = dayjs.unix(time).tz(userTimezone);
 
-    return await this.habitLogRepo.getLogs(
+    return await this.habitLogRepo.isLoggedByDate(
       habitId,
-      parsedTime
-        .clone()
-        .startOf(timeUnit === 'w' ? timeUnit : 'M')
-        .toDate(),
-      parsedTime
-        .clone()
-        .endOf(timeUnit === 'w' ? timeUnit : 'M')
-        .toDate(),
-      hasThoughtOnly,
+      parsedTime.clone().startOf(timeUnit).unix(),
+      parsedTime.clone().endOf(timeUnit).unix(),
     );
   }
 
-  async isLoggedToday(user: AppUser, habitId: string) {
+  async isLoggedByDate(user: AppUser, habitId: string) {
     const habit = await this.habitService.getHabit(habitId, user.id);
 
     if (!habit) throw new NotFoundException();
 
-    return this.habitLogRepo.isLoggedByDate(
+    return await this.habitLogRepo.isLoggedByDate(
       habitId,
-      dayjs().startOf('d').toDate(),
-      dayjs().endOf('d').toDate(),
+      dayjs().startOf('d').unix(),
+      dayjs().endOf('d').unix(),
     );
   }
 }

@@ -14,7 +14,7 @@
   },
   "dependencies": {
     "dayjs": "^1.11.23",
-    "zod": "^4.4.3",
+    "zod": "^4.5.4",
     "zod-timezone-validation": "^2.0.0"
   },
   "packageManager": "yarn@1.22.22",
