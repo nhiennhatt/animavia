@@ -12,7 +12,7 @@ export class AddHabitLogSchema extends createZodDto(
 
 export const getHabitLogParamsSchema = z.object({
   habit_id: z.uuid(),
-  period: z.enum(['w', 'M']).optional().default('w'),
+  period: z.enum(['d', 'w', 'M']).optional().default('d'),
   time: z.uint32(),
 });
 
