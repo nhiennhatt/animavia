@@ -45,6 +45,8 @@ export const getOwnedHabitSchema = z.object({
   htype: z.enum(Object.values(HabitType)).optional(),
   pinned: z.coerce.number().int().min(0).max(1).optional(),
   page: z.coerce.number().int().min(0).max(10).default(1).optional(),
+  includeLog: z.coerce.boolean().optional().default(false),
+  includeQuote: z.coerce.boolean().optional().default(false),
 });
 
 export class GetOwnedHabitSchema extends createZodDto(getOwnedHabitSchema) {}

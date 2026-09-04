@@ -44,7 +44,7 @@ export default class ThoughtService {
       .unix();
 
     if (
-      targetUnix > createdUnix ||
+      targetUnix < createdUnix ||
       targetUnix < startOfDate - 86400 ||
       (targetUnix < startOfDate && nowUnix >= startOfDate + 8 * 3600)
     ) {

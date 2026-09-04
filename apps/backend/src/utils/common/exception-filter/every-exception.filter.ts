@@ -30,10 +30,8 @@ export class EveryExceptionFilter implements ExceptionFilter {
 
     res.status(501).json({
       success: false,
-      code: 'Internal server error',
-      error: {
-        message: 'Internal server error',
-      },
+      code: 'INTERNAL_ERROR',
+      error: 'INTERNAL_ERROR',
     });
   }
 }

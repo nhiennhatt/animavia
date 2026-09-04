@@ -35,11 +35,13 @@ export default class HabitController {
     @User() user: AppUser,
     @Query() query: GetOwnedHabitSchema,
   ) {
-    return await this.habitService.getOwnedHabits(user.id, {
+    return await this.habitService.getOwnedHabits(user, {
       size: query.size,
       htype: query.htype,
       page: query.page,
       pinned: query.pinned === undefined ? query.pinned : !!query.pinned,
+      includeLog: query.includeLog,
+      includeQuote: query.includeQuote,
     });
   }
 

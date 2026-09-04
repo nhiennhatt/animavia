@@ -13,8 +13,11 @@ export default class ThoughtRepository extends Repository {
         thought,
         forDate: sql`to_timestamp(${forDate})`,
       })
-      .onConflictDoNothing({
+      .onConflictDoUpdate({
         target: [habitThoughts.habitId, habitThoughts.forDate],
+        set: {
+          thought,
+        },
       })
       .returning();
   }

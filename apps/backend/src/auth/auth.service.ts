@@ -111,7 +111,9 @@ export default class AuthService {
     try {
       const payload = this.jwtService.verifyAccessToken(token);
 
-      const user = await this.authRepository.getUserById(payload.userId);
+      const user = await this.authRepository.getProtectedUserById(
+        payload.userId,
+      );
 
       if (!user) throw new UnauthorizedException();
 

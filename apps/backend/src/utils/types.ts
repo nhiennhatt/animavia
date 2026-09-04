@@ -19,3 +19,7 @@ export interface AppUser {
 export interface AppRequest extends Request {
   user: AppUser;
 }
+
+export type Nullable<T> = {
+  [K in keyof T]: T[K] | null;
+};

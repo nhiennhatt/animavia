@@ -1,6 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { and, count, eq, getColumns, sql, SQL } from 'drizzle-orm';
-import { habits, habitStatements } from '../../db/db.schema';
+import {
+  and,
+  count,
+  eq,
+  getColumns,
+  sql,
+  SQL,
+  inArray,
+  between,
+} from 'drizzle-orm';
+import { habitLogs, habits, habitStatements } from '../../db/db.schema';
 import { HabitType } from '../../utils/constants';
 import Repository from '../../utils/common/Repository';
 
@@ -152,5 +161,21 @@ export default class HabitRepository extends Repository {
       })
       .from(habitQuery)
       .leftJoinLateral(statementQuery, sql`true`);
+  }
+
+  getLogOfHabits(fromDate: number, toDate: number, ...habitIds: string[]) {
+    return this.txHost.tx
+      .select()
+      .from(habitLogs)
+      .where(
+        and(
+          inArray(habitLogs.habitId, habitIds),
+          between(
+            habitLogs.forDate,
+            sql`to_timestamp(${fromDate})`,
+            sql`to_timestamp(${toDate})`,
+          ),
+        ),
+      );
   }
 }

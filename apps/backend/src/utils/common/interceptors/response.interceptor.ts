@@ -12,8 +12,12 @@ export class ResponseInterceptor implements NestInterceptor {
     context: ExecutionContext,
     next: CallHandler<any>,
   ): Observable<any> | Promise<Observable<any>> {
-    return next
-      .handle()
-      .pipe(map((value: unknown) => ({ code: 'SUCCESS', data: value })));
+    return next.handle().pipe(
+      map((value: unknown) => ({
+        success: true,
+        code: 'SUCCESS',
+        data: value,
+      })),
+    );
   }
 }

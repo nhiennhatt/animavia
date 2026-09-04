@@ -9,9 +9,16 @@ import {
   GenerateHabitValidation,
   UpdateHabitValidation,
 } from './habit.validation';
-import { habits, habitStatements } from '../../db/db.schema';
+import { habitLogs, habits, habitStatements } from '../../db/db.schema';
 import { HabitType } from '../../utils/constants';
 import HabitRepository from './habit.repository';
+import { AppUser, Nullable } from '../../utils/types';
+import { dayjs } from '../../utils';
+
+type HabitWithQuote = typeof habits.$inferSelect &
+  Partial<
+    Nullable<Pick<typeof habitStatements.$inferSelect, 'source' | 'statement'>>
+  >;
 
 @Injectable()
 export default class HabitService {
@@ -61,29 +68,50 @@ export default class HabitService {
   }
 
   async getOwnedHabits(
-    userId: string,
-    options: {
+    user: AppUser,
+    {
+      includeLog,
+      ...options
+    }: {
       size?: number;
       page?: number;
       htype?: (typeof HabitType)[keyof typeof HabitType];
       pinned?: boolean;
       includeQuote?: boolean;
+      includeLog?: boolean;
     },
   ): Promise<{
-    data: (typeof habits.$inferSelect & {
-      [K in keyof typeof habitStatements.$inferSelect]?:
-        (typeof habitStatements.$inferSelect)[K] | null;
-    })[];
+    data: (HabitWithQuote & { logs?: number[] })[];
     total: number;
   }> {
-    const data = await (options.includeQuote
-      ? this.habitRepository.getHabits(userId, options)
-      : this.habitRepository.getHabitsWithRandomStatement(userId, options));
+    const data: HabitWithQuote[] = await (options.includeQuote
+      ? this.habitRepository.getHabitsWithRandomStatement(user.id, options)
+      : this.habitRepository.getHabits(user.id, options));
 
     const total = await this.habitRepository.countHabitAmountOfUser(
-      userId,
+      user.id,
       options,
     );
+
+    if (includeLog) {
+      const startOfWeek = dayjs().tz(user.timezone).startOf('w').unix();
+      const ids = data.map((habit) => habit.id);
+      const logs = await this.habitRepository.getLogOfHabits(
+        startOfWeek,
+        startOfWeek + 604800 - 1,
+        ...ids,
+      );
+
+      return {
+        data: data.map((h) => ({
+          ...h,
+          logs: logs
+            .filter((l) => l.habitId === h.id)
+            .map((l) => dayjs(l.forDate).unix()),
+        })),
+        total,
+      };
+    }
 
     return {
       data,

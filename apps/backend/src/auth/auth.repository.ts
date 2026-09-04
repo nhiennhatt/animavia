@@ -26,6 +26,20 @@ export default class AuthRepository extends Repository {
     return this.txHost.tx.query.users.findFirst({ where: { email } });
   }
 
+  getProtectedUserById(id: string) {
+    return this.txHost.tx.query.users.findFirst({
+      columns: {
+        email: true,
+        givenName: true,
+        id: true,
+        role: true,
+        status: true,
+        timezone: true,
+      },
+      where: { id },
+    });
+  }
+
   getUserById(id: string) {
     return this.txHost.tx.query.users.findFirst({ where: { id } });
   }
