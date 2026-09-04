@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { ClientsModule } from '@nestjs/microservices';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_GUARD, APP_PIPE } from '@nestjs/core';
 import { ZodValidationPipe } from 'nestjs-zod';
-import { ThrottlerModule } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { ClsModule } from 'nestjs-cls';
 
 import { AppController } from './app.controller';
@@ -42,6 +42,10 @@ import ThoughtModule from '../habit/thought/thought.module';
     HabitValueModule,
   ],
   controllers: [AppController],
-  providers: [AppService, { provide: APP_PIPE, useClass: ZodValidationPipe }],
+  providers: [
+    AppService,
+    { provide: APP_PIPE, useClass: ZodValidationPipe },
+    { provide: APP_GUARD, useClass: ThrottlerGuard },
+  ],
 })
 export class AppModule {}

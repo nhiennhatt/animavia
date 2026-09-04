@@ -2,7 +2,7 @@ import { ClsPluginTransactional } from '@nestjs-cls/transactional';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { ClientsModuleAsyncOptions, Transport } from '@nestjs/microservices';
 import { ThrottlerAsyncOptions } from '@nestjs/throttler';
-import { ClsModuleAsyncOptions, ClsModuleOptions } from 'nestjs-cls';
+import { ClsModuleOptions } from 'nestjs-cls';
 import DbModule from '../db/db.module';
 import { TransactionalAdapterDrizzleOrm } from '@nestjs-cls/transactional-adapter-drizzle-orm';
 
@@ -32,6 +32,7 @@ export const throllerModuleOptions: ThrottlerAsyncOptions = {
   useFactory: (configService: ConfigService) => ({
     throttlers: [
       {
+        name: 'default',
         limit: parseInt(configService.get('RATE_LIMIT', '120')),
         ttl: parseInt(configService.get('RATE_LIMIT_TIME', `${6 * 1000}`)),
       },

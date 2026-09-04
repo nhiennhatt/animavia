@@ -9,11 +9,16 @@ import {
   SignInUserValidation,
   ValidateRegistrationOtpValidation,
 } from './auth.validation';
+import { Throttle } from '@nestjs/throttler';
 
 @Controller('auth')
 export default class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @Throttle({
+    default: { limit: 1, ttl: 30 * 1000 },
+    long: { limit: 3, ttl: 5 * 60 * 1000 },
+  })
   @Post('/register/send-otp')
   async sendRegisterOtp(@Body() payload: SendRegistrationOtpPayload) {
     await this.authService.sendRegistrationOtp(payload.email);
