@@ -70,7 +70,7 @@ export default class HabitLogService {
     const userTimezone = user.timezone;
     const parsedTime = dayjs.unix(time).tz(userTimezone);
 
-    return await this.habitLogRepo.isLoggedByDate(
+    return await this.habitLogRepo.getLogs(
       habitId,
       parsedTime.clone().startOf(timeUnit).unix(),
       parsedTime.clone().endOf(timeUnit).unix(),

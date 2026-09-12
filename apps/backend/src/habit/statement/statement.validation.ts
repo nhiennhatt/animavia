@@ -19,7 +19,7 @@ const getStatementsByHabitSchema = z.object({
     .number()
     .int()
     .optional()
-    .transform((v) => !v),
+    .transform((v) => !!v),
 });
 
 export class GetStatementsByHabitSchema extends createZodDto(

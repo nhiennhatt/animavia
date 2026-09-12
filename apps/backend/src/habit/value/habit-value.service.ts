@@ -62,4 +62,34 @@ export default class HabitValueService {
 
     return await this.habitValueRepository.getHabitValues(habitId);
   }
+
+  async updateHabitValue(
+    id: string,
+    userId: string,
+    name: string,
+    value: string,
+  ) {
+    const valueRecord =
+      await this.habitValueRepository.getHabitValueByIdAndUserId(id, userId);
+
+    if (valueRecord.length === 0) throw new NotFoundException();
+
+    const result = await this.habitValueRepository.updateHabitValue(
+      id,
+      name,
+      value,
+    );
+
+    if (result.length > 0) return result[0];
+    return null;
+  }
+
+  async deleteHabitValue(id: string, userId: string) {
+    const valueRecord =
+      await this.habitValueRepository.getHabitValueByIdAndUserId(id, userId);
+
+    if (valueRecord.length === 0) throw new NotFoundException();
+
+    await this.habitValueRepository.deleteHabitValue(id);
+  }
 }

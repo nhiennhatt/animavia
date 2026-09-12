@@ -1,15 +1,21 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
+  Param,
   ParseUUIDPipe,
   Post,
+  Put,
   Query,
 } from '@nestjs/common';
 import HabitValueService from './habit-value.service';
 import { Auth, User } from '../../utils/common/decorators';
 import type { AppUser } from '../../utils/types';
-import { CreateHabitValueSchema } from './habit-value.validation';
+import {
+  CreateHabitValueSchema,
+  UpdateHabitValueSchema,
+} from './habit-value.validation';
 import { UserStatusEnum } from '../../utils/constants';
 
 @Controller('/habit-value')
@@ -36,5 +42,27 @@ export default class HabitValueController {
     @Query('habitId', new ParseUUIDPipe()) habitId: string,
   ) {
     return await this.valueService.getHabitValues(user.id, habitId);
+  }
+
+  @Put('/:id')
+  async updateHabitValue(
+    @User() user: AppUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+    @Body() payload: UpdateHabitValueSchema,
+  ) {
+    return await this.valueService.updateHabitValue(
+      id,
+      user.id,
+      payload.name,
+      payload.value,
+    );
+  }
+
+  @Delete('/:id')
+  async deleteHabitValue(
+    @User() user: AppUser,
+    @Param('id', new ParseUUIDPipe()) id: string,
+  ) {
+    return await this.valueService.deleteHabitValue(id, user.id);
   }
 }
