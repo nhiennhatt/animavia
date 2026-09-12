@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState } from "react"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/libs/utils/tailwindcss"
 
 interface MeteorsProps {
   number?: number

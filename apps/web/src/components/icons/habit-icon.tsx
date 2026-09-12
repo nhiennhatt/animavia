@@ -1,0 +1,65 @@
+import { SVGProps } from "react";
+
+export function HabitIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      width="20px"
+      height="20px"
+      viewBox="0 0 48 48"
+      strokeWidth="2"
+      xmlns="http://www.w3.org/2000/svg"
+      {...props}
+    >
+      <circle
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="currentColor"
+        className="a"
+        cx={24}
+        cy={24}
+        r="21.5"
+      />
+      <circle
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="currentColor"
+        className="a"
+        cx={24}
+        cy={24}
+        r={14}
+      />
+      <path
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="currentColor"
+        className="a"
+        d="M39.2028,8.7972A3.75,3.75,0,1,1,33.9,14.1005"
+      />
+      <line
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="currentColor"
+        className="a"
+        x1="20.5"
+        y1="18.9057"
+        x2={24}
+        y2={17}
+      />
+      <line
+        fill="none"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        stroke="currentColor"
+        className="a"
+        x1={24}
+        y1={17}
+        x2={24}
+        y2={31}
+      />
+    </svg>
+  );
+}

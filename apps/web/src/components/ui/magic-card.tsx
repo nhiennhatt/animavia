@@ -9,7 +9,7 @@ import {
 } from "motion/react"
 import { useTheme } from "next-themes"
 
-import { cn } from "@/lib/utils"
+import { cn } from "@/libs/utils/tailwindcss"
 
 interface MagicCardBaseProps {
   children?: React.ReactNode

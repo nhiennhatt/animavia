@@ -1,4 +1,4 @@
-import { HabitDetails } from "@/modules/habit/HabitDetails/HabitDetails";
+import { HabitDetails } from "@/modules/habit/habit-details/HabitDetails";
 
 export default async function HabitDetailsPage({
   params,
