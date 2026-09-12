@@ -6,5 +6,6 @@ dist
 .env
 .env.*
 *.env
+!.sample.env
 
 *.pem
